@@ -1,41 +1,18 @@
-import { useState } from "react";
-import "./App.css";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import { useTranslation } from "react-i18next";
 
 function App() {
-    const [count, setCount] = useState(0);
+    // The `t()` function gives us
+    // access to the active locale's
+    // translations.
+    const { t } = useTranslation();
 
     return (
-        <>
-            <div>
-                <a href='https://vite.dev' target='_blank'>
-                    <img src={viteLogo} className='logo' alt='Vite logo' />
-                </a>
-                <a href='https://react.dev' target='_blank'>
-                    <img
-                        src={reactLogo}
-                        className='logo react'
-                        alt='React logo'
-                    />
-                </a>
-            </div>
-            <h1>Vite + React</h1>
-            <div className='card'>
-                <button
-                    className='text-red-600'
-                    onClick={() => setCount((count) => count + 1)}
-                >
-                    count is {count}
-                </button>
-                <p>
-                    Edit <code>src/App.tsx</code> and save to test HMR
-                </p>
-            </div>
-            <p className='read-the-docs'>
-                Click on the Vite and React logos to learn more
-            </p>
-        </>
+        <div className='...'>
+            {/* We pass the key we provided under
+          `resources.translation` in 
+          src/i18n/config.ts */}
+            <h2>{t("hello_world")}</h2>
+        </div>
     );
 }
 

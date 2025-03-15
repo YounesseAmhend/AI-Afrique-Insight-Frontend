@@ -1,3 +1,6 @@
+run:
+	pnpm run dev
+
 git:
 	git add .
 	git commit -m "$(m)"

@@ -1,0 +1,25 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# File Structure
+
+Here’s the recommended folder structure for organizing your project:
+
+```plaintext
+📂 src
+ ┣ 📂 components        # Reusable UI components across multiple pages
+ ┣ 📂 model             # TypeScript types, interfaces, and data models
+ ┣ 📂 pages             # Folder for each page, containing its own components
+ ┃ ┃ ┣ 📂 home          # Example page folder
+ ┃ ┃ ┃ ┣ 📂 components # Components specific to this page
+ ┃ ┃ ┃ ┗ 📜 homePage.tsx  # Main page component
+ ┣ 📂 state             # Global state management using Zustand
+ ┣ 📂 utils             # Utility functions and helper modules
+ ┣ 📜 main.tsx          # Entry point for the application
+ ┣ 📜 App.tsx           # Root component
+```
+
+---
