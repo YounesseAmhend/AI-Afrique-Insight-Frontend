@@ -1,4 +1,4 @@
-# Afrique AI Insight
+# Afrique AI Insight Frontend
 
 ## Technologies
 
