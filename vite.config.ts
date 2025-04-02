@@ -8,4 +8,14 @@ export default defineConfig({
     react() as PluginOption,
     tailwindcss() as PluginOption
   ],
+  server: {
+    port: 3000,
+    host: '0.0.0.0',
+    strictPort: true,
+    open: true
+  },
+  preview: {
+    port: 3001,
+    strictPort: true
+  }
 })
