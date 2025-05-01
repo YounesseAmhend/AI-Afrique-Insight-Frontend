@@ -1,19 +1,25 @@
-import { useTranslation } from "react-i18next";
+import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './router';
 
-function App() {
-    // The `t()` function gives us
-    // access to the active locale's
-    // translations.
-    const { t } = useTranslation();
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
-    return (
-        <div className='...'>
-            {/* We pass the key we provided under
-          `resources.translation` in 
-          src/i18n/config.ts */}
-            <h2>{t("hello_world")}</h2>
-        </div>
-    );
-}
-
-export default App;
+export const App: React.FC = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+      {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
+    </QueryClientProvider>
+  );
+};

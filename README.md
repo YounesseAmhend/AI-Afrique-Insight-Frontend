@@ -3,10 +3,11 @@
 ## Technologies
 
 - **React**  
+- **axios** for HTTP calls
 - **Vite**  
-- **Zustand** (State Management)  
+- **Zustand** (State Management)  for simple global state
 - **React Query**  
-- **React Router**  
+- **React Router**  [new name is **TanStack Query**] for data fetching/caching 
 - **ESLint** (Linting)
 
 ### VS Code Configuration
@@ -111,3 +112,78 @@ Here’s the recommended folder structure for organizing your project:
    - Use **UPPER_SNAKE_CASE** for constant variables and configurations.
    - Example:  
      - `const API_URL = 'https://api.example.com';`
+
+
+
+
+new file structure or rather expanding on the old one :
+```
+news-app/
+├── public/
+│   └── favicon.ico
+├── src/
+│   ├── api/
+│   │   ├── axios.ts                 # Axios instance configuration
+│   │   └── newsApi.ts               # API calls for news endpoints
+│   ├── components/
+│   │   ├── common/
+│   │   │   ├── ErrorMessage.tsx     # Error display component
+│   │   │   ├── Loading.tsx          # Loading indicator
+│   │   │   └── Container.tsx        # Layout container
+│   │   ├── news/
+│   │   │   ├── NewsList.tsx         # List of news items
+│   │   │   ├── NewsItem.tsx         # Individual news item
+│   │   │   └── NewsDetails.tsx      # Detailed view of a news item
+│   │   └── layout/
+│   │       ├── Header.tsx           # App header
+│   │       ├── Footer.tsx           # App footer
+│   │       └── MainLayout.tsx       # Main layout wrapper
+│   ├── hooks/
+│   │   └── useNewsQuery.ts          # Custom hook for news queries
+│   ├── pages/
+│   │   ├── HomePage.tsx             # Home page showing news list
+│   │   ├── NewsDetailPage.tsx       # Single news item page
+│   │   └── ErrorPage.tsx            # Error page
+│   ├── store/
+│   │   ├── types.ts                 # Type definitions for store
+│   │   └── newsStore.ts             # Zustand store for news
+│   ├── types/
+│   │   └── news.ts                  # TypeScript interfaces for news data
+│   ├── utils/
+│   │   └── formatDate.ts            # Utility functions
+│   ├── App.tsx                      # Main application component
+│   ├── main.tsx                     # Entry point
+│   ├── router.tsx                   # Router configuration
+│   └── vite-env.d.ts               # Vite type declarations
+├── .eslintrc.json                  # ESLint configuration
+├── .gitignore                      # Git ignore file
+├── index.html                      # HTML template
+├── package.json                    # Project dependencies
+├── tsconfig.json                   # TypeScript configuration
+├── vite.config.ts                  # Vite configuration
+└── README.md                       # Project documentation
+```
+
+
+
+<!-- spring.application.name=news-service
+
+spring.datasource.url=jdbc:postgresql://ep-broad-heart-a2v7pr2f-pooler.eu-central-1.aws.neon.tech:5432/neondb
+#spring.datasource.url=jdbc:postgresql://ep-late-tooth-a24mlw9d-pooler.eu-central-1.aws.neon.tech/neondb _____my db____
+spring.datasource.username=neondb_owner
+spring.datasource.password=npg_M1HBdo3TmapX
+
+# Required for Neon
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+# Prevent modifications
+spring.jpa.hibernate.ddl-auto=create
+spring.jpa.properties.hibernate.show_sql=false
+spring.jpa.properties.hibernate.format_sql=false
+spring.jpa.properties.hibernate.use_sql_comments=true
+spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+spring.jpa.hibernate.naming.implicit-strategy=org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl
+
+
+grpc.client.news-client.address=static://${GRPC_SERVER_HOST}:${GRPC_SERVER_PORT}
+grpc.client.news-client.negotiationType=PLAINTEXT -->
