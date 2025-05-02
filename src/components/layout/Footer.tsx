@@ -4,8 +4,8 @@ export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
   
   return (
-    <footer className="app-footer">
-      <div className="footer-content">
+    <footer className="">
+      <div className="">
         <p>&copy; {currentYear} News App. All rights reserved.</p>
       </div>
     </footer>

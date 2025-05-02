@@ -5,17 +5,17 @@ export const api = axios.create({
     timeout: 1000,
     //this might not be needed but laho a3lame
     headers: {
-        'Content-Type':'application/json'
+        "Content-Type": "application/json",
     },
 });
 
 // Response interceptor for error handling
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('API Error:', error.response);
-    return Promise.reject(error);
-  }
+    (response) => response,
+    (error) => {
+        console.error("API Error:", error.response);
+        return Promise.reject(error);
+    },
 );
 
 export default api;

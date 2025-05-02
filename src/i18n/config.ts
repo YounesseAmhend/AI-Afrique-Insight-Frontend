@@ -3,29 +3,20 @@ import i18n from "i18next";
 // re-render when language changes.
 import HttpApi from "i18next-http-backend";
 import { initReactI18next } from "react-i18next";
+
+
 export const supportedLangs = {
     en: "English",
+    fr: "French",
     ar: "Arabic (العربية)",
 };
 i18n
-    // Wire up the backend as a plugin.
     .use(HttpApi)
-    // Add React bindings as a plugin.
     .use(initReactI18next)
-    // Initialize the i18next instance.
     .init({
-        // Config options
+        lng: "en", // Default language
 
-        // Specifies the default language (locale) used
-        // when a user visits our site for the first time.
-        // We use English here, but feel free to use
-        // whichever locale you want.
-        lng: "en",
-
-        // Fallback locale used when a translation is
-        // missing in the active locale. Again, use your
-        // preferred locale here.
-        fallbackLng: "en",
+        fallbackLng: "en", // Default to English for missing translations
 
         // Enables useful output in the browser’s
         // dev console.

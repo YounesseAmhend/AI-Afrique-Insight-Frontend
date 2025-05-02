@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 
 export const Header: React.FC = () => {
   return (
-    <header className="app-header">
-      <div className="header-content">
-        <div className="logo">
+    <header className="">
+      <div className="">
+        <div className="">
           <Link to="/">News App</Link>
         </div>
-        <nav className="main-nav">
+        <nav className="">
           <ul>
             <li>
               <Link to="/">Home</Link>

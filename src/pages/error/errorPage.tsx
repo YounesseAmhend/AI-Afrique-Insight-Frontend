@@ -11,13 +11,13 @@ export const ErrorPage: React.FC = () => {
     'An unknown error occurred';
 
   return (
-    <div className="error-page">
+    <div className="">
       <h1>Oops!</h1>
       <p>Sorry, an unexpected error has occurred.</p>
-      <p className="error-message">
+      <p className="">
         <i>{errorMessage}</i>
       </p>
-      <Link to="/" className="back-home-link">
+      <Link to="/" className="">
         Back to Home
       </Link>
     </div>

@@ -16,9 +16,9 @@ export const NewsDetails: React.FC = () => {
   if (isLoading) return <Loading />;
   
   if (error || !news) return (
-    <div className="news-detail-error">
+    <div className="">
       <ErrorMessage message="Failed to load news article" />
-      <Link to="/" className="back-link">Back to News List</Link>
+      <Link to="/" className="">Back to News List</Link>
     </div>
   );
 
@@ -26,23 +26,23 @@ export const NewsDetails: React.FC = () => {
   const formattedDate = new Date(news.publishDate).toLocaleDateString();
 
   return (
-    <article className="news-details">
+    <article className="">
       <header>
-        <h1 className="news-title">{news.title}</h1>
-        <div className="news-meta">
-          <span className="news-author">By {news.author}</span>
-          <span className="news-date">Published on {formattedDate}</span>
-          {news.category && <span className="news-category">Category: {news.category}</span>}
+        <h1 className="">{news.title}</h1>
+        <div className="">
+          <span className="">By {news.author}</span>
+          <span className="">Published on {formattedDate}</span>
+          {news.category && <span className="">Category: {news.category}</span>}
         </div>
       </header>
       
       {news.imageUrl && (
-        <div className="news-image">
+        <div className="">
           <img src={news.imageUrl} alt={news.title} />
         </div>
       )}
       
-      <div className="news-content">
+      <div className="">
         {/* Split content by paragraphs for better display */}
         {news.content.split('\n').map((paragraph, index) => (
           <p key={index}>{paragraph}</p>
@@ -50,18 +50,18 @@ export const NewsDetails: React.FC = () => {
       </div>
       
       {news.tags && news.tags.length > 0 && (
-        <div className="news-tags">
+        <div className="">
           <h3>Tags:</h3>
           <ul>
             {news.tags.map((tag, index) => (
-              <li key={index} className="news-tag">{tag}</li>
+              <li key={index} className="">{tag}</li>
             ))}
           </ul>
         </div>
       )}
       
-      <div className="news-actions">
-        <button onClick={() => navigate(-1)} className="back-button">
+      <div className="">
+        <button onClick={() => navigate(-1)} className="">
           Back
         </button>
       </div>
