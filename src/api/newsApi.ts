@@ -5,8 +5,14 @@ import api from "./axios";
 export const newsApi = {
     // Get all news
     getAllNews: async (): Promise<NewsResponseDto[]> => {
-        const response = await api.get<NewsResponseDto[]>("/news");
-        return response.data;
+        try {
+            const response = await api.get<NewsResponseDto[]>("/news");
+            console.log("News API Response:", response);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch news:", error);
+            throw new Error("Failed to load news articles. Please try again later.");
+        }
     },
 
     // Get a single news item by ID

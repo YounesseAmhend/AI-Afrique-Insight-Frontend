@@ -1,14 +1,14 @@
 
 // TypeScript interfaces for news data
 export interface NewsResponseDto {
-  id: number;
+  id: string;
   title: string;
-  content: string;
+  body: string;
   author: string;
-  publishDate: string;
-  imageUrl?: string;
-  category?: string;
-  tags?: string[];
+  postDate: string;
+  imageUrl: string | null;
+  url: string;
+  createdAt: null;
 }
 
 //again just in case  we will add this :

@@ -3,7 +3,7 @@ import { useGetAllNews } from "../../hooks/useNewsQuery";
 import { useNewsState } from "../../state/newsState";
 import { ErrorMessage } from "../common/ErrorMessage";
 import { Loading } from "../common/Loading";
-import { NewsItem } from "./newsItem";
+import { NewsItem } from "./NewsItem";
 
 export const NewsList: React.FC = () => {
     // Get filter values from store
@@ -16,19 +16,6 @@ export const NewsList: React.FC = () => {
     // Filter news based on search term and category
     const filteredNews = React.useMemo(() => {
         if (!news) return [];
-
-        return news.filter((item) => {
-            const matchesSearch = searchTerm
-                ? item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  item.content.toLowerCase().includes(searchTerm.toLowerCase())
-                : true;
-
-            const matchesCategory = selectedCategory
-                ? item.category === selectedCategory
-                : true;
-
-            return matchesSearch && matchesCategory;
-        });
     }, [news, searchTerm, selectedCategory]);
 
     if (isLoading) return <Loading />;
@@ -41,15 +28,11 @@ export const NewsList: React.FC = () => {
             />
         );
 
-    if (filteredNews.length === 0) {
-        return <p>No news articles found matching your criteria.</p>;
-    }
-
     return (
-        <div className='news-list'>
-            {filteredNews.map((newsItem) => (
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4'>
+            {news?.map((newsItem) => (
                 <NewsItem key={newsItem.id} news={newsItem} />
-            ))}
+            )) ?? null}
         </div>
     );
 };
