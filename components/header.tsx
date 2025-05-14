@@ -21,6 +21,7 @@ export default function Header() {
     { name: "Companies", href: "/companies" },
     { name: "Research", href: "/research" },
     { name: "About", href: "/about" },
+    { name: "map", href: "/map" },
   ]
 
   useEffect(() => {
@@ -105,7 +106,7 @@ export default function Header() {
               className="flex items-center justify-center h-9 w-9 rounded-full bg-cyan-500/50 hover:bg-cyan-500 transition-colors duration-200"
               aria-label="Globe"
             >
-              <Globe className="h-5 w-5 text-white" />
+              <Globe className="h-5 w-5 text-white" href="/map" />
             </Button>
 
             {isMobile && (
