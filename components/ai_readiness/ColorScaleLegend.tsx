@@ -1,27 +1,31 @@
+
 import React from 'react';
-import { colorScaleConfig } from '@/data/aiReadinessData'; // Adjust path if needed
+import { getColorByValue } from '@/data/aiReadinessData';
 
 const ColorScaleLegend: React.FC = () => {
+  // Create a scale with 10 steps
+  const steps = 10;
+  const scaleItems = Array.from({ length: steps }, (_, i) => 1 - i / (steps - 1));
+
   return (
-    <div className="flex flex-col items-center w-full mt-4 mb-6">
-      <h3 className="text-lg font-medium text-gray-700 mb-2">AI Readiness Index Scale</h3>
-      <div className="flex items-center w-full max-w-2xl">
-        {/* Optional: Min value text */}
-        {/* <span className="text-xs font-medium mr-2">Low</span> */}
-        <div className="flex-grow flex h-6 rounded-md overflow-hidden border border-gray-300">
-          {colorScaleConfig.map((item, index) => (
+    <div className="flex flex-col text-white">
+      <h3 className="text-md font-semibold mb-2">AI Readiness Scale</h3>
+      <div className="flex items-center">
+        <div className="flex-1 flex">
+          {scaleItems.map((value, i) => (
             <div
-              key={index}
-              className="flex-grow h-full flex items-center justify-center text-xs text-black font-medium px-1" // Adjusted text color for visibility
-              style={{ backgroundColor: item.color, minWidth: '40px' }} // Added minWidth
-              title={`> ${item.threshold.toFixed(2)}`} // Tooltip for threshold
-            >
-              {`≥${(item.threshold * 100).toFixed(0)}%`}
-            </div>
+              key={i}
+              className="h-4 flex-1"
+              style={{ backgroundColor: getColorByValue(value) }}
+              title={`${(value * 100).toFixed(0)}%`}
+            />
           ))}
         </div>
-        {/* Optional: Max value text */}
-        {/* <span className="text-xs font-medium ml-2">High</span> */}
+        <div className="flex justify-between w-full px-2 text-xs mt-1">
+          <span>0%</span>
+          <span>50%</span>
+          <span>100%</span>
+        </div>
       </div>
     </div>
   );

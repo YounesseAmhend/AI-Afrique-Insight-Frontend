@@ -497,6 +497,7 @@
 // }
 
 
+
 import React, { useEffect, useRef, useState } from 'react';
 import * as am5 from '@amcharts/amcharts5';
 import * as am5map from '@amcharts/amcharts5/map';
@@ -530,7 +531,11 @@ const AIReadinessMap: React.FC = () => {
     const root = am5.Root.new(chartDivRef.current);
     rootRef.current = root;
 
+    // Set dark theme
     root.setThemes([am5themes_Animated.new(root)]);
+    
+    // Set chart background to match our dark theme
+    root.interfaceColors.set("background", am5.color(0x1f2937));
 
     const chart = root.container.children.push(
       am5map.MapChart.new(root, {
@@ -539,6 +544,7 @@ const AIReadinessMap: React.FC = () => {
         projection: am5map.geoMercator(),
         homeZoomLevel: 1,
         homeGeoPoint: { longitude: 0, latitude: 20 }, // Adjusted for better initial view
+        backgroundColor: am5.color(0x1f2937), // Dark background for the map
       })
     );
 
@@ -564,8 +570,10 @@ const AIReadinessMap: React.FC = () => {
       tooltipText: "{name}: {value}", // Shows name and original value on hover
       interactive: true,
       strokeWidth: 0.5,
-      stroke: am5.color(0xffffff), // White borders
-      templateField: "polygonSettings" // Allows custom settings per polygon if needed
+      stroke: am5.color(0x374151), // Darker border
+      templateField: "polygonSettings", // Allows custom settings per polygon if needed
+      tooltipBackgroundColor: am5.color(0x1e293b), // Dark tooltip background
+      tooltipBorderRadius: 8,
     });
 
     // Adapter for custom fill color based on value
@@ -574,14 +582,14 @@ const AIReadinessMap: React.FC = () => {
       if (dataContext?.value !== undefined) {
         return am5.color(getColorByValue(dataContext.value));
       }
-      return am5.color(0xCCCCCC); // Default fill for countries with no data
+      return am5.color(0x4b5563); // Dark gray for countries with no data
     });
 
     // Hover effect
     polygonTemplate.states.create("hover", {
-      fillOpacity: 0.7, // Slightly change opacity or use a different fill
-       strokeWidth: 1,
-       stroke: am5.color(0xb0b0b0)
+      fillOpacity: 0.8, // Slightly change opacity
+      strokeWidth: 1,
+      stroke: am5.color(0x6b7280) // Medium gray hover border
     });
 
 
@@ -595,23 +603,29 @@ const AIReadinessMap: React.FC = () => {
 
         // Reset previous selected polygon's highlight (if any)
         if (selectedPolygonRef.current && selectedPolygonRef.current !== clickedPolygon) {
-          selectedPolygonRef.current.set("stroke", am5.color(0xffffff));
+          selectedPolygonRef.current.set("stroke", am5.color(0x374151));
           selectedPolygonRef.current.set("strokeWidth", 0.5);
         }
 
         // Highlight newly selected polygon
-        clickedPolygon.set("stroke", am5.color(0x3B82F6)); // Tailwind blue-500
+        clickedPolygon.set("stroke", am5.color(0x3b82f6)); // Tailwind blue-500
         clickedPolygon.set("strokeWidth", 2);
         selectedPolygonRef.current = clickedPolygon;
 
-         // Optionally, zoom to the country
+        // Optionally, zoom to the country
         // chart.zoomToDataItem(clickedPolygon.dataItem as am5.DataItem<am5map.IMapPolygonSeriesDataItem>);
-
       }
     });
 
 
-    chart.set("zoomControl", am5map.ZoomControl.new(root, {}));
+    const zoomControl = am5map.ZoomControl.new(root, {
+      // Customize zoom control to match dark theme
+      plusFill: am5.color(0xd1d5db),
+      minusFill: am5.color(0xd1d5db),
+      backgroundColor: am5.color(0x1f2937),
+      baseColor: am5.color(0x6b7280),
+    });
+    chart.set("zoomControl", zoomControl);
 
     return () => {
       if (rootRef.current) {
@@ -630,7 +644,7 @@ const AIReadinessMap: React.FC = () => {
 
           // Reset previous highlight
           if (selectedPolygonRef.current) {
-              selectedPolygonRef.current.set("stroke", am5.color(0xffffff));
+              selectedPolygonRef.current.set("stroke", am5.color(0x374151));
               selectedPolygonRef.current.set("strokeWidth", 0.5);
               selectedPolygonRef.current = null;
           }
@@ -639,7 +653,7 @@ const AIReadinessMap: React.FC = () => {
               series.mapPolygons.each((polygon) => {
                   const dataItem = polygon.dataItem?.dataContext as AIReadinessCountryData | undefined;
                   if (dataItem?.id === country.id) {
-                      polygon.set("stroke", am5.color(0x3B82F6)); // Tailwind blue-500
+                      polygon.set("stroke", am5.color(0x3b82f6)); // Tailwind blue-500
                       polygon.set("strokeWidth", 2);
                       selectedPolygonRef.current = polygon;
                       // chart?.zoomToDataItem(polygon.dataItem as am5.DataItem<am5map.IMapPolygonSeriesDataItem>);
@@ -652,24 +666,27 @@ const AIReadinessMap: React.FC = () => {
 
 
   return (
-    <div className="flex flex-col w-full h-screen bg-gray-100 p-4 md:p-6 overflow-hidden">
+    <div className="flex flex-col w-full h-screen bg-gray-900 p-4 md:p-6 overflow-hidden">
       <div className="flex flex-col md:flex-row w-full h-full gap-4 md:gap-6">
         {/* Left column - Map and Scale */}
         <div className="flex flex-col w-full md:w-2/3 h-full md:max-h-full">
-          <div className="flex-grow flex flex-col bg-white rounded-xl shadow-lg p-4 md:p-6 overflow-hidden">
-            <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-1">Global AI Readiness Index</h1>
-            <p className="text-sm text-gray-600 mb-3 md:mb-4">Click on a country or list item for details.</p>
-            <div ref={chartDivRef} id="chartdiv" className="w-full flex-grow min-h-[300px] md:min-h-[400px]" />
-          </div>
-          <div className="bg-white rounded-xl shadow-lg p-2 md:p-4 mt-4 md:mt-6">
-            <ColorScaleLegend />
+          <div className="flex-grow flex flex-col bg-gray-800 rounded-xl shadow-lg border border-gray-700 p-4 md:p-6 overflow-hidden">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-100 mb-1">Global AI Readiness Index</h1>
+            <p className="text-sm text-gray-400 mb-3 md:mb-4">Click on a country or list item for details.</p>
+            <div 
+              ref={chartDivRef} 
+              id="chartdiv" 
+              className="w-full flex-grow min-h-[300px] md:min-h-[400px] rounded-lg overflow-hidden" 
+            />
           </div>
         </div>
 
         {/* Right column - Country details and rankings */}
         <div className="flex flex-col w-full md:w-1/3 h-full md:max-h-full overflow-hidden">
-          <CountryDetail country={selectedCountry} />
-          <div className="flex-grow overflow-hidden"> {/* Ensure ranking list takes remaining space and scrolls */}
+          <div className="bg-gray-800 rounded-xl shadow-lg border border-gray-700 mb-4 md:mb-6">
+            <CountryDetail country={selectedCountry} />
+          </div>
+          <div className="flex-grow bg-gray-800 rounded-xl shadow-lg border border-gray-700 overflow-hidden"> 
             <CountryRankings selectedCountry={selectedCountry} onCountrySelect={handleSelectCountryFromList} />
           </div>
         </div>
