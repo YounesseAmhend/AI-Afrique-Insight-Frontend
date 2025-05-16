@@ -1,362 +1,679 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import 'leaflet/dist/leaflet.css';
-import { MapContainer, TileLayer, GeoJSON, Tooltip } from 'react-leaflet';
 
-// This component will only run on the client side
-const AIReadinessMap = () => {
-  const [geoJsonData, setGeoJsonData] = useState(null);
-  const [aiReadinessData, setAiReadinessData] = useState({});
-  const mapRef = useRef(null);
-  const geoJsonRef = useRef(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+// import { useEffect, useRef, useState } from 'react';
+// import * as am5 from '@amcharts/amcharts5';
+// import * as am5map from '@amcharts/amcharts5/map';
+// import am5geodata_worldLow from '@amcharts/amcharts5-geodata/worldLow';
+// import am5themes_Animated from '@amcharts/amcharts5/themes/Animated';
 
-  // AI readiness data provided
-  useEffect(() => {
-    // This would typically come from an API or database
-    const readinessData = {
-      "Albania": 0.5267925411,
-  "Algeria": 0.3704386652,
-  "Angola": 0.2596592419,
-  "Argentina": 0.473809436,
-  "Armenia": 0.4928866848,
-  "Australia": 0.7271003276,
-  "Austria": 0.7245657593,
-  "Azerbaijan": 0.4709397778,
-  "Bahamas": 0.4575124606,
-  "Bahrain": 0.5152552128,
-  "Bangladesh": 0.3840644881,
-  "Barbados": 0.5046559796,
-  "Belarus": 0.4707805738,
-  "Belgium": 0.6724778414,
-  "Belize": 0.4226269051,
-  "Benin": 0.3631641939,
-  "Bhutan": 0.4419174641,
-  "Bolivia": 0.3766047582,
-  "Bosnia and Herzegovina": 0.427913107,
-  "Botswana": 0.4128481001,
-  "Brazil": 0.5013404191,
-  "Brunei": 0.495252721,
-  "Bulgaria": 0.5772901177,
-  "Burkina Faso": 0.3118198998,
-  "Burundi": 0.2945838682,
-  "Cabo Verde": 0.4325874969,
-  "Cambodia": 0.3699649274,
-  "Cameroon": 0.3412863761,
-  "Canada": 0.7131513506,
-  "Central African Republic": 0.1844374854,
-  "Chad": 0.2336060721,
-  "Chile": 0.5857511684,
-  "China": 0.6354544014,
-  "Colombia": 0.4894939214,
-  "Comoros": 0.2541744448,
-  "Congo, Dem. Rep. of the": 0.2474736646,
-  "Congo, Republic of": 0.2766119055,
-  "Costa Rica": 0.5401517823,
-  "Croatia": 0.5816958994,
-  "Cyprus": 0.6323937923,
-  "Czech Republic": 0.6462222636,
-  "Côte d'Ivoire": 0.3655039445,
-  "Denmark": 0.778522253,
-  "Djibouti": 0.3188972175,
-  "Dominican Republic": 0.4688114077,
-  "Ecuador": 0.4420759678,
-  "Egypt": 0.3940544575,
-  "El Salvador": 0.3897207454,
-  "Estonia": 0.7643821985,
-  "Eswatini": 0.3062105589,
-  "Ethiopia": 0.2535972483,
-  "Fiji": 0.4488119557,
-  "Finland": 0.7580173612,
-  "France": 0.697508648,
-  "Gabon": 0.322529301,
-  "Gambia": 0.3599762432,
-  "Georgia": 0.5298935696,
-  "Germany": 0.7533288151,
-  "Ghana": 0.42519968,
-  "Greece": 0.5819787532,
-  "Guatemala": 0.3901057094,
-  "Guinea": 0.3235260881,
-  "Guinea-Bissau": 0.2648987435,
-  "Guyana": 0.4241799712,
-  "Haiti": 0.2682539858,
-  "Honduras": 0.341811832,
-  "Hong Kong": 0.7005674094,
-  "Hungary": 0.5629620552,
-  "Iceland": 0.700100854,
-  "India": 0.4925031066,
-  "Indonesia": 0.516303286,
-  "Iran": 0.3783258945,
-  "Iraq": 0.2698363438,
-  "Ireland": 0.6931281686,
-  "Israel": 0.7254701853,
-  "Italy": 0.6207230389,
-  "Jamaica": 0.4337519929,
-  "Japan": 0.7331584096,
-  "Jordan": 0.4828312397,
-  "Kazakhstan": 0.5523871183,
-  "Kenya": 0.445192121,
-  "Korea, Republic of": 0.7265744358,
-  "Kuwait": 0.4613324776,
-  "Kyrgyz Republic": 0.4258418009,
-  "Lao P.D.R.": 0.3304923177,
-  "Latvia": 0.6323978007,
-  "Lebanon": 0.4178484976,
-  "Lesotho": 0.3553587049,
-  "Liberia": 0.3702549636,
-  "Libya": 0.2449759804,
-  "Lithuania": 0.664883852,
-  "Luxembourg": 0.7352711707,
-  "Madagascar": 0.3054498844,
-  "Malawi": 0.3400474451,
-  "Malaysia": 0.6320262998,
-  "Mali": 0.2961464524,
-  "Malta": 0.6592013389,
-  "Mauritania": 0.2329010069,
-  "Mauritius": 0.5251129717,
-  "Mexico": 0.5320441872,
-  "Moldova": 0.4806292579,
-  "Mongolia": 0.4843766093,
-  "Montenegro": 0.5036933348,
-  "Morocco": 0.4291108549,
-  "Mozambique": 0.2573649622,
-  "Myanmar": 0.3274729885,
-  "Namibia": 0.4196117297,
-  "Nepal": 0.3509792909,
-  "Netherlands": 0.7664931118,
-  "New Zealand": 0.7536797822,
-  "Nicaragua": 0.3313940018,
-  "Niger": 0.325826142,
-  "Nigeria": 0.3362846896,
-  "North Macedonia": 0.4819860309,
-  "Norway": 0.7057610154,
-  "Oman": 0.5327769667,
-  "Pakistan": 0.3686380237,
-  "Panama": 0.5012808219,
-  "Papua New Guinea": 0.2901029624,
-  "Paraguay": 0.4097598791,
-  "Peru": 0.4911330715,
-  "Philippines": 0.498485662,
-  "Poland": 0.5968846828,
-  "Portugal": 0.6460198164,
-  "Qatar": 0.5345921367,
-  "Romania": 0.5836483091,
-  "Russia": 0.5592233092,
-  "Rwanda": 0.4374002144,
-  "Saint Lucia": 0.3741867021,
-  "Saint Vincent and the Grenadines": 0.3418518081,
-  "Saudi Arabia": 0.5769030005,
-  "Senegal": 0.3959680274,
-  "Serbia": 0.5374747142,
-  "Seychelles": 0.5306526497,
-  "Sierra Leone": 0.2978129052,
-  "Singapore": 0.800566718,
-  "Slovak Republic": 0.5916225016,
-  "Slovenia": 0.6338621378,
-  "South Africa": 0.4967651442,
-  "Spain": 0.6483311951,
-  "Sri Lanka": 0.4360671416,
-  "Sudan": 0.2329067122,
-  "Suriname": 0.417907849,
-  "Sweden": 0.7477999032,
-  "Switzerland": 0.7570124269,
-  "Syria": 0.2981490139,
-  "Tajikistan": 0.366445981,
-  "Tanzania": 0.3524204865,
-  "Thailand": 0.5357170999,
-  "Timor-Leste": 0.427734755,
-  "Togo": 0.3156863898,
-  "Trinidad and Tobago": 0.4356224835,
-  "Tunisia": 0.4654096887,
-  "Türkiye": 0.5401873589,
-  "Uganda": 0.3539346606,
-  "Ukraine": 0.5124830604,
-  "United Arab Emirates": 0.6281846315,
-  "United Kingdom": 0.730945304,
-  "United States": 0.771269083,
-  "Uruguay": 0.5486409888,
-  "Venezuela": 0.274582522,
-  "Vietnam": 0.4818687364,
-  "Yemen": 0.2533275578,
-  "Zambia": 0.3707199767,
-  "Zimbabwe": 0.3047910891,
-  "Asia and Pacific": 0.52,
-  "Europe": 0.63,
-  "North America": 0.74,
-  "Sub-Saharan Africa": 0.34,
-  "ASEAN-5": 0.6,
-  "Advanced economies": 0.682974195,
-  "Emerging market economies": 0.4649250086,
-  "Euro area": 0.67,
-  "European Union": 0.66,
-  "Latin America and the Caribbean": 0.43,
-  "Low-income countries": 0.3224417757,
-  "Major advanced economies (G7)": 0.72,
-  "Middle East and Central Asia": 0.4
-    };
-    setAiReadinessData(readinessData);
-  }, []);
+// // AI Readiness data for countries
+// const aiReadinessData = [
+//   { id: "AL", name: "Albania", value: 0.5267925411 },
+//   { id: "DZ", name: "Algeria", value: 0.3704386652 },
+//   { id: "AO", name: "Angola", value: 0.2596592419 },
+//   { id: "AR", name: "Argentina", value: 0.473809436 },
+//   { id: "AM", name: "Armenia", value: 0.4928866848 },
+//   { id: "AU", name: "Australia", value: 0.7271003276 },
+//   { id: "AT", name: "Austria", value: 0.7245657593 },
+//   { id: "AZ", name: "Azerbaijan", value: 0.4709397778 },
+//   { id: "BS", name: "Bahamas", value: 0.4575124606 },
+//   { id: "BH", name: "Bahrain", value: 0.5152552128 },
+//   { id: "BD", name: "Bangladesh", value: 0.3840644881 },
+//   { id: "BB", name: "Barbados", value: 0.5046559796 },
+//   { id: "BY", name: "Belarus", value: 0.4707805738 },
+//   { id: "BE", name: "Belgium", value: 0.6724778414 },
+//   { id: "BZ", name: "Belize", value: 0.4226269051 },
+//   { id: "BJ", name: "Benin", value: 0.3631641939 },
+//   { id: "BT", name: "Bhutan", value: 0.4419174641 },
+//   { id: "BO", name: "Bolivia", value: 0.3766047582 },
+//   { id: "BA", name: "Bosnia and Herzegovina", value: 0.427913107 },
+//   { id: "BW", name: "Botswana", value: 0.4128481001 },
+//   { id: "BR", name: "Brazil", value: 0.5013404191 },
+//   { id: "BN", name: "Brunei", value: 0.495252721 },
+//   { id: "BG", name: "Bulgaria", value: 0.5772901177 }
+// ];
 
-  // Fetch GeoJSON data
-  useEffect(() => {
-    const fetchGeoJson = async () => {
-      try {
-        setLoading(true);
-        // Natural Earth Data provides a free GeoJSON of world countries
-        const response = await fetch(
-          'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json'
-        );
+// // Sort data by value for the rankings
+// const sortedData = [...aiReadinessData].sort((a, b) => b.value - a.value);
+
+// export default function AIReadinessMap() {
+//   const chartRef = useRef(null);
+//   const [selectedCountry, setSelectedCountry] = useState(null);
+  
+//   useEffect(() => {
+//     // Dispose of chart when component unmounts
+//     return () => {
+//       if (chartRef.current) {
+//         chartRef.current.dispose();
+//       }
+//     };
+//   }, []);
+
+//   useEffect(() => {
+//     // Create root element
+//     const root = am5.Root.new("chartdiv");
+    
+//     // Set themes
+//     root.setThemes([am5themes_Animated.new(root)]);
+    
+//     // Create the map chart
+//     const chart = root.container.children.push(
+//       am5map.MapChart.new(root, {
+//         panX: "translateX",
+//         panY: "translateY",
+//         projection: am5map.geoMercator(),
+//         homeZoomLevel: 1,
+//         homeGeoPoint: { longitude: 0, latitude: 0 }
+//       })
+//     );
+    
+//     // Create polygon series for countries
+//     const polygonSeries = chart.series.push(
+//       am5map.MapPolygonSeries.new(root, {
+//         geoJSON: am5geodata_worldLow,
+//         valueField: "value",
+//         calculateAggregates: true,
+//         fill: am5.color(0xaaaaaa)
+//       })
+//     );
+    
+//     // Configure polygon series
+//     polygonSeries.set("heatRules", [{
+//       target: polygonSeries.mapPolygons.template,
+//       dataField: "value",
+//       min: am5.color(0xe5f5e0),
+//       max: am5.color(0x31a354),
+//       key: "fill"
+//     }]);
+    
+//     // Set data
+//     polygonSeries.data.setAll(aiReadinessData);
+    
+//     // Configure polygon template
+//     const polygonTemplate = polygonSeries.mapPolygons.template;
+    
+//     polygonTemplate.setAll({
+//       tooltipText: "{name}: {value}",
+//       interactive: true,
+//       strokeWidth: 0.5,
+//       stroke: am5.color(0xffffff)
+//     });
+    
+//     // Events for interaction
+//     polygonTemplate.events.on("pointerover", function(ev) {
+//       const country = ev.target.dataItem.dataContext;
+//       setSelectedCountry(country);
+//       ev.target.set("stroke", am5.color(0x000000));
+//       ev.target.set("strokeWidth", 2);
+//     });
+    
+//     polygonTemplate.events.on("pointerout", function(ev) {
+//       setSelectedCountry(null);
+//       ev.target.set("strokeWidth", 0.5);
+//       ev.target.set("stroke", am5.color(0xffffff));
+//     });
+    
+//     // Add heat legend
+//     const heatLegend = chart.children.push(
+//       am5.HeatLegend.new(root, {
+//         orientation: "horizontal",
+//         startText: "Low",
+//         endText: "High",
+//         startValue: 0,
+//         endValue: 1,
+//         stepCount: 5,
+//         width: am5.percent(60),
+//         y: am5.percent(95),
+//         centerX: am5.percent(50)
+//       })
+//     );
+    
+//     heatLegend.startLabel.setAll({
+//       fontSize: 12,
+//       fill: am5.color(0x000000)
+//     });
+    
+//     heatLegend.endLabel.setAll({
+//       fontSize: 12,
+//       fill: am5.color(0x000000)
+//     });
+    
+//     // Set the legend gradient colors
+//     heatLegend.startText = "Low AI Readiness";
+//     heatLegend.endText = "High AI Readiness";
+    
+//     chartRef.current = root;
+    
+//     return () => {
+//       root.dispose();
+//     };
+//   }, []);
+  
+//   // Format value as percentage
+//   const formatScore = (value) => {
+//     return `${(value * 100).toFixed(1)}%`;
+//   };
+  
+//   return (
+//     <div className="flex flex-col md:flex-row w-full h-screen bg-gray-50 p-6 overflow-hidden">
+//       <div className="flex-grow md:w-3/4 overflow-hidden rounded-xl shadow-lg bg-white p-4">
+//         <h1 className="text-2xl font-bold text-gray-800 mb-2 ml-2">Global AI Readiness Index</h1>
+//         <div id="chartdiv" className="w-full h-full min-h-96" />
+//       </div>
+      
+//       <div className="mt-4 md:mt-0 md:ml-6 md:w-1/4 flex flex-col">
+//         <div className="bg-white rounded-xl shadow-lg p-4 mb-4 flex-shrink-0">
+//           <h2 className="text-lg font-semibold text-gray-800 mb-3">Selected Country</h2>
+//           {selectedCountry ? (
+//             <div className="p-4 bg-gray-50 rounded-lg">
+//               <h3 className="font-bold text-xl text-gray-800">{selectedCountry.name}</h3>
+//               <div className="mt-2 flex items-center">
+//                 <div className="w-full bg-gray-200 rounded-full h-4">
+//                   <div
+//                     className="bg-green-600 h-4 rounded-full"
+//                     style={{ width: `${selectedCountry.value * 100}%` }}
+//                   ></div>
+//                 </div>
+//                 <span className="ml-2 font-medium text-gray-800">
+//                   {formatScore(selectedCountry.value)}
+//                 </span>
+//               </div>
+//             </div>
+//           ) : (
+//             <p className="text-gray-500 italic">Hover over a country to see details</p>
+//           )}
+//         </div>
         
-        if (!response.ok) {
-          throw new Error('Failed to fetch GeoJSON data');
-        }
+//         <div className="bg-white rounded-xl shadow-lg p-4 overflow-y-auto flex-grow">
+//           <h2 className="text-lg font-semibold text-gray-800 mb-3">Country Rankings</h2>
+//           <div className="space-y-2">
+//             {sortedData.map((country, index) => (
+//               <div
+//                 key={country.id}
+//                 className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors"
+//               >
+//                 <div className="flex items-center">
+//                   <span className="w-6 text-right font-semibold text-gray-500">{index + 1}.</span>
+//                   <span className="ml-2 text-gray-800">{country.name}</span>
+//                 </div>
+//                 <span className="font-medium text-gray-700">{formatScore(country.value)}</span>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+// import { useEffect, useRef, useState } from 'react';
+// import * as am5 from '@amcharts/amcharts5';
+// import * as am5map from '@amcharts/amcharts5/map';
+// import am5geodata_worldLow from '@amcharts/amcharts5-geodata/worldLow';
+// import am5themes_Animated from '@amcharts/amcharts5/themes/Animated';
+
+// // AI Readiness data for countries
+// const aiReadinessData = [
+//   { id: "AL", name: "Albania", value: 0.5267925411 },
+//   { id: "DZ", name: "Algeria", value: 0.3704386652 },
+//   { id: "AO", name: "Angola", value: 0.2596592419 },
+//   { id: "AR", name: "Argentina", value: 0.473809436 },
+//   { id: "AM", name: "Armenia", value: 0.4928866848 },
+//   { id: "AU", name: "Australia", value: 0.7271003276 },
+//   { id: "AT", name: "Austria", value: 0.7245657593 },
+//   { id: "AZ", name: "Azerbaijan", value: 0.4709397778 },
+//   { id: "BS", name: "Bahamas", value: 0.4575124606 },
+//   { id: "BH", name: "Bahrain", value: 0.5152552128 },
+//   { id: "BD", name: "Bangladesh", value: 0.3840644881 },
+//   { id: "BB", name: "Barbados", value: 0.5046559796 },
+//   { id: "BY", name: "Belarus", value: 0.4707805738 },
+//   { id: "BE", name: "Belgium", value: 0.6724778414 },
+//   { id: "BZ", name: "Belize", value: 0.4226269051 },
+//   { id: "BJ", name: "Benin", value: 0.3631641939 },
+//   { id: "BT", name: "Bhutan", value: 0.4419174641 },
+//   { id: "BO", name: "Bolivia", value: 0.3766047582 },
+//   { id: "BA", name: "Bosnia and Herzegovina", value: 0.427913107 },
+//   { id: "BW", name: "Botswana", value: 0.4128481001 },
+//   { id: "BR", name: "Brazil", value: 0.5013404191 },
+//   { id: "BN", name: "Brunei", value: 0.495252721 },
+//   { id: "BG", name: "Bulgaria", value: 0.5772901177 }
+// ];
+
+// // Sort data by value for the rankings
+// const sortedData = [...aiReadinessData].sort((a, b) => b.value - a.value);
+
+// // Color scale for the map
+// const colorScale = [
+//   { threshold: 0.2, color: "#edf8e9" },
+//   { threshold: 0.3, color: "#c7e9c0" },
+//   { threshold: 0.4, color: "#a1d99b" },
+//   { threshold: 0.5, color: "#74c476" },
+//   { threshold: 0.6, color: "#41ab5d" },
+//   { threshold: 0.7, color: "#238b45" },
+//   { threshold: 0.8, color: "#005a32" }
+// ];
+
+// // Separate component for the color scale legend
+// const ColorScale = () => {
+//   return (
+//     <div className="flex flex-col items-center w-full mt-4 mb-6">
+//       <h3 className="text-lg font-medium text-gray-700 mb-2">AI Readiness Index Scale</h3>
+//       <div className="flex items-center w-full max-w-2xl">
+//         <span className="text-xs font-medium mr-2">0%</span>
+//         <div className="flex-grow flex h-6 rounded-md overflow-hidden">
+//           {colorScale.map((item, index) => (
+//             <div
+//               key={index}
+//               className="flex-grow h-full flex items-center justify-center text-xs text-white font-medium"
+//               style={{ backgroundColor: item.color }}
+//             >
+//               {(item.threshold * 100).toFixed(0)}%
+//             </div>
+//           ))}
+//         </div>
+//         <span className="text-xs font-medium ml-2">100%</span>
+//       </div>
+//     </div>
+//   );
+// };
+
+// // Separate component for the country rankings
+// const CountryRankings = ({ selectedCountry }) => {
+//   // Format value as percentage
+//   const formatScore = (value) => {
+//     return `${(value * 100).toFixed(1)}%`;
+//   };
+  
+//   return (
+//     <div className="bg-white rounded-xl shadow-lg p-6 overflow-y-auto h-full">
+//       <h2 className="text-xl font-semibold text-gray-800 mb-4">Country Rankings</h2>
+//       <div className="space-y-2">
+//         {sortedData.map((country, index) => (
+//           <div
+//             key={country.id}
+//             className={`flex items-center justify-between py-2 px-4 rounded-lg transition-colors ${
+//               selectedCountry && selectedCountry.id === country.id ? 'bg-blue-50 border-l-4 border-blue-500' : 'hover:bg-gray-50'
+//             }`}
+//           >
+//             <div className="flex items-center">
+//               <span className="w-8 text-right font-semibold text-gray-500">{index + 1}.</span>
+//               <span className="ml-3 text-gray-800 font-medium">{country.name}</span>
+//             </div>
+//             <div className="flex items-center">
+//               <div className="w-16 h-3 rounded-full mr-2" style={{
+//                 backgroundColor: colorScale.find(item => item.threshold > country.value)?.color || colorScale[colorScale.length-1].color
+//               }}></div>
+//               <span className="font-medium text-gray-700">{formatScore(country.value)}</span>
+//             </div>
+//           </div>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// };
+
+// // Separate component for the country detail
+// const CountryDetail = ({ country }) => {
+//   const formatScore = (value) => {
+//     return `${(value * 100).toFixed(1)}%`;
+//   };
+  
+//   if (!country) {
+//     return (
+//       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+//         <h2 className="text-xl font-semibold text-gray-800 mb-2">Country Details</h2>
+//         <p className="text-gray-500">Click on a country to view details</p>
+//       </div>
+//     );
+//   }
+  
+//   // Find rank of the selected country
+//   const rank = sortedData.findIndex(item => item.id === country.id) + 1;
+  
+//   return (
+//     <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+//       <h2 className="text-xl font-semibold text-gray-800 mb-4">Country Details</h2>
+//       <div className="flex items-center justify-between mb-4">
+//         <h3 className="font-bold text-2xl text-gray-800">{country.name}</h3>
+//         <div className="bg-gray-100 rounded-lg px-3 py-1">
+//           <span className="font-semibold text-gray-600">Rank: </span>
+//           <span className="font-bold text-gray-800">{rank}</span>
+//           <span className="text-gray-500 text-sm"> of {sortedData.length}</span>
+//         </div>
+//       </div>
+//       <div className="mb-4">
+//         <div className="flex justify-between mb-1">
+//           <span className="font-medium text-gray-700">AI Readiness Score:</span>
+//           <span className="font-bold text-gray-800">{formatScore(country.value)}</span>
+//         </div>
+//         <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+//           <div
+//             className="h-4 rounded-full"
+//             style={{
+//               width: `${country.value * 100}%`,
+//               backgroundColor: colorScale.find(item => item.threshold > country.value)?.color || colorScale[colorScale.length-1].color
+//             }}
+//           ></div>
+//         </div>
+//       </div>
+//       <div className="bg-gray-50 rounded-lg p-4">
+//         <h4 className="font-medium text-gray-700 mb-2">Comparison</h4>
+//         <div className="space-y-2 text-sm">
+//           <div className="flex justify-between">
+//             <span>Global Average:</span>
+//             <span className="font-medium">{formatScore(aiReadinessData.reduce((sum, country) => sum + country.value, 0) / aiReadinessData.length)}</span>
+//           </div>
+//           <div className="flex justify-between">
+//             <span>Top Country:</span>
+//             <span className="font-medium">{sortedData[0].name} ({formatScore(sortedData[0].value)})</span>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default function AIReadinessMap() {
+//   const chartRef = useRef(null);
+//   const [selectedCountry, setSelectedCountry] = useState(null);
+  
+//   useEffect(() => {
+//     // Create root element
+//     const root = am5.Root.new("chartdiv");
+    
+//     // Set themes
+//     root.setThemes([am5themes_Animated.new(root)]);
+    
+//     // Create the map chart
+//     const chart = root.container.children.push(
+//       am5map.MapChart.new(root, {
+//         panX: "translateX",
+//         panY: "translateY",
+//         projection: am5map.geoMercator(),
+//         homeZoomLevel: 1,
+//         homeGeoPoint: { longitude: 0, latitude: 5 }
+//       })
+//     );
+    
+//     // Create polygon series for countries
+//     const polygonSeries = chart.series.push(
+//       am5map.MapPolygonSeries.new(root, {
+//         geoJSON: am5geodata_worldLow,
+//         valueField: "value",
+//         calculateAggregates: true,
+//         fill: am5.color(0xEEEEEE)
+//       })
+//     );
+    
+//     // Set up the custom color logic for the map
+//     const polygonTemplate = polygonSeries.mapPolygons.template;
+    
+//     // Set data with custom color application
+//     const processedData = aiReadinessData.map(country => {
+//       // Find the appropriate color scale item
+//       const scaleItem = colorScale.find(item => item.threshold > country.value) || colorScale[colorScale.length-1];
+//       return {
+//         ...country,
+//         // Convert hex to amCharts color
+//         fill: am5.color(scaleItem.color)
+//       };
+//     });
+    
+//     polygonSeries.data.setAll(processedData);
+    
+//     // Configure polygon template
+//     polygonTemplate.setAll({
+//       tooltipText: "{name}",
+//       interactive: true,
+//       strokeWidth: 0.5,
+//       stroke: am5.color(0xFFFFFF)
+//     });
+    
+//     // Events for interaction - now using click
+//     polygonTemplate.events.on("click", function(ev) {
+//       const country = ev.target.dataItem.dataContext;
+//       setSelectedCountry(country);
+      
+//       // Reset all countries' stroke
+//       polygonSeries.mapPolygons.each(function(polygon) {
+//         polygon.set("stroke", am5.color(0xFFFFFF));
+//         polygon.set("strokeWidth", 0.5);
+//       });
+      
+//       // Highlight selected country
+//       ev.target.set("stroke", am5.color(0x000000));
+//       ev.target.set("strokeWidth", 2);
+//     });
+    
+//     // Add zoom control
+//     chart.set("zoomControl", am5map.ZoomControl.new(root, {
+//       x: 10,
+//       y: 10,
+//       centerX: 0,
+//       centerY: 0
+//     }));
+    
+//     chartRef.current = root;
+    
+//     return () => {
+//       root.dispose();
+//     };
+//   }, []);
+  
+//   return (
+//     <div className="flex flex-col w-full h-screen bg-gray-50 p-6 overflow-hidden">
+//       {/* Main container */}
+//       <div className="flex flex-col md:flex-row w-full h-full gap-6">
+//         {/* Left column - Map and Scale */}
+//         <div className="flex flex-col w-full md:w-2/3 h-full">
+//           {/* Map container */}
+//           <div className="flex-grow flex flex-col bg-white rounded-xl shadow-lg p-6 overflow-hidden">
+//             <h1 className="text-2xl font-bold text-gray-800 mb-2">Global AI Readiness Index</h1>
+//             <p className="text-gray-600 mb-4">Click on a country to view detailed information</p>
+//             <div id="chartdiv" className="w-full flex-grow min-h-96" />
+//           </div>
+          
+//           {/* Scale container - separate component */}
+//           <div className="bg-white rounded-xl shadow-lg p-4 mt-6">
+//             <ColorScale />
+//           </div>
+//         </div>
         
-        const data = await response.json();
-        setGeoJsonData(data);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching GeoJSON:', err);
-        setError(err.message);
-        setLoading(false);
+//         {/* Right column - Country details and rankings */}
+//         <div className="flex flex-col w-full md:w-1/3 h-full">
+//           {/* Country detail - separate component */}
+//           <CountryDetail country={selectedCountry} />
+          
+//           {/* Rankings - separate component */}
+//           <div className="flex-grow">
+//             <CountryRankings selectedCountry={selectedCountry} />
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+import React, { useEffect, useRef, useState } from 'react';
+import * as am5 from '@amcharts/amcharts5';
+import * as am5map from '@amcharts/amcharts5/map';
+import am5geodata_worldLow from '@amcharts/amcharts5-geodata/worldLow';
+import am5themes_Animated from '@amcharts/amcharts5/themes/Animated';
+
+import { AIReadinessCountryData, MapChartDataItem } from '@/types/aiReadiness';
+import { aiReadinessDataArray, getColorByValue } from '@/data/aiReadinessData'; // Adjust path
+
+import ColorScaleLegend from './ai_readiness/ColorScaleLegend'; // Adjust path
+import CountryRankings from './ai_readiness/CountryRankings';   // Adjust path
+import CountryDetail from './ai_readiness/CountryDetail';     // Adjust path
+
+const AIReadinessMap: React.FC = () => {
+  const chartDivRef = useRef<HTMLDivElement | null>(null);
+  const rootRef = useRef<am5.Root | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<AIReadinessCountryData | null>(null);
+  const selectedPolygonRef = useRef<am5map.MapPolygon | null>(null);
+
+
+  useEffect(() => {
+    if (!chartDivRef.current) {
+      return;
+    }
+
+    // Dispose previous root if it exists
+    if (rootRef.current) {
+      rootRef.current.dispose();
+    }
+
+    const root = am5.Root.new(chartDivRef.current);
+    rootRef.current = root;
+
+    root.setThemes([am5themes_Animated.new(root)]);
+
+    const chart = root.container.children.push(
+      am5map.MapChart.new(root, {
+        panX: "translateX",
+        panY: "translateY",
+        projection: am5map.geoMercator(),
+        homeZoomLevel: 1,
+        homeGeoPoint: { longitude: 0, latitude: 20 }, // Adjusted for better initial view
+      })
+    );
+
+    const polygonSeries = chart.series.push(
+      am5map.MapPolygonSeries.new(root, {
+        geoJSON: am5geodata_worldLow,
+        valueField: "value", // For potential use with heat rules, though we use adapter now
+        exclude: ["AQ"], // Exclude Antarctica
+      })
+    );
+
+    // Prepare data for the series with direct fill for custom color scale
+    const processedMapData: MapChartDataItem[] = aiReadinessDataArray.map(country => ({
+      ...country,
+      // The fill will be set by the adapter, but you could pre-calculate here if not using adapter
+    }));
+    polygonSeries.data.setAll(processedMapData);
+
+
+    const polygonTemplate = polygonSeries.mapPolygons.template;
+
+    polygonTemplate.setAll({
+      tooltipText: "{name}: {value}", // Shows name and original value on hover
+      interactive: true,
+      strokeWidth: 0.5,
+      stroke: am5.color(0xffffff), // White borders
+      templateField: "polygonSettings" // Allows custom settings per polygon if needed
+    });
+
+    // Adapter for custom fill color based on value
+    polygonTemplate.adapters.add("fill", (fill, target) => {
+      const dataContext = target.dataItem?.dataContext as MapChartDataItem | undefined;
+      if (dataContext?.value !== undefined) {
+        return am5.color(getColorByValue(dataContext.value));
       }
-    };
+      return am5.color(0xCCCCCC); // Default fill for countries with no data
+    });
 
-    fetchGeoJson();
-  }, []);
+    // Hover effect
+    polygonTemplate.states.create("hover", {
+      fillOpacity: 0.7, // Slightly change opacity or use a different fill
+       strokeWidth: 1,
+       stroke: am5.color(0xb0b0b0)
+    });
 
-  // Function to get color based on AI readiness score
-  const getColor = (score) => {
-    // Default color for countries with no data
-    if (score === undefined) return '#cccccc';
-    
-    // Color gradient from brighter to darker based on score
-    // Higher scores get darker colors (more intense blue)
-    const hue = 210; // Blue hue
-    const saturation = 100; // Full saturation
-    const lightness = Math.min(80, Math.max(20, 80 - (score * 60))); // Lightness decreases with higher scores
-    
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-  };
 
-  // Style function for GeoJSON
-  const countryStyle = (feature) => {
-    const countryName = feature.properties.name;
-    let score = aiReadinessData[countryName];
-    
-    // Handle name mismatches - some common examples
-    if (!score) {
-      if (countryName === "United States of America") score = aiReadinessData["United States"];
-      else if (countryName === "United Kingdom") score = aiReadinessData["UK"];
-      else if (countryName === "The Bahamas") score = aiReadinessData["Bahamas"];
-      else if (countryName === "Brunei Darussalam") score = aiReadinessData["Brunei"];
-    }
-    
-    return {
-      fillColor: getColor(score),
-      weight: 1,
-      opacity: 1,
-      color: 'white',
-      dashArray: '3',
-      fillOpacity: 0.7
-    };
-  };
+    // Click event for selection
+    polygonTemplate.events.on("click", (ev) => {
+      const clickedPolygon = ev.target as am5map.MapPolygon;
+      const dataContext = clickedPolygon.dataItem?.dataContext as AIReadinessCountryData | undefined;
 
-  // Handle hover events
-  const onEachFeature = (feature, layer) => {
-    const countryName = feature.properties.name;
-    let score = aiReadinessData[countryName];
-    
-    // Handle name mismatches
-    if (!score) {
-      if (countryName === "United States of America") score = aiReadinessData["United States"];
-      else if (countryName === "United Kingdom") score = aiReadinessData["UK"];
-      else if (countryName === "The Bahamas") score = aiReadinessData["Bahamas"];
-      else if (countryName === "Brunei Darussalam") score = aiReadinessData["Brunei"];
-    }
-    
-    const tooltipContent = score !== undefined
-      ? `${countryName}: ${score.toFixed(4)}`
-      : `${countryName}: No data`;
-    
-    layer.bindTooltip(tooltipContent);
-    
-    layer.on({
-      mouseover: (e) => {
-        const layer = e.target;
-        layer.setStyle({
-          weight: 2,
-          color: '#666',
-          dashArray: '',
-          fillOpacity: 0.9
-        });
-        layer.bringToFront();
-      },
-      mouseout: (e) => {
-        geoJsonRef.current.resetStyle(e.target);
-      },
-      click: (e) => {
-        // You could implement additional functionality here
-        // when a country is clicked
+      if (dataContext) {
+        setSelectedCountry(dataContext);
+
+        // Reset previous selected polygon's highlight (if any)
+        if (selectedPolygonRef.current && selectedPolygonRef.current !== clickedPolygon) {
+          selectedPolygonRef.current.set("stroke", am5.color(0xffffff));
+          selectedPolygonRef.current.set("strokeWidth", 0.5);
+        }
+
+        // Highlight newly selected polygon
+        clickedPolygon.set("stroke", am5.color(0x3B82F6)); // Tailwind blue-500
+        clickedPolygon.set("strokeWidth", 2);
+        selectedPolygonRef.current = clickedPolygon;
+
+         // Optionally, zoom to the country
+        // chart.zoomToDataItem(clickedPolygon.dataItem as am5.DataItem<am5map.IMapPolygonSeriesDataItem>);
+
       }
     });
+
+
+    chart.set("zoomControl", am5map.ZoomControl.new(root, {}));
+
+    return () => {
+      if (rootRef.current) {
+        rootRef.current.dispose();
+        rootRef.current = null;
+      }
+    };
+  }, []); // Empty dependency array: runs once on mount
+
+  const handleSelectCountryFromList = (country: AIReadinessCountryData | null) => {
+      setSelectedCountry(country);
+
+      if (rootRef.current) { // Ensure chart is initialized
+          const chart = rootRef.current.container.getChildAt(0) as am5map.MapChart | undefined;
+          const series = chart?.series.getIndex(0) as am5map.MapPolygonSeries | undefined;
+
+          // Reset previous highlight
+          if (selectedPolygonRef.current) {
+              selectedPolygonRef.current.set("stroke", am5.color(0xffffff));
+              selectedPolygonRef.current.set("strokeWidth", 0.5);
+              selectedPolygonRef.current = null;
+          }
+
+          if (country && series) {
+              series.mapPolygons.each((polygon) => {
+                  const dataItem = polygon.dataItem?.dataContext as AIReadinessCountryData | undefined;
+                  if (dataItem?.id === country.id) {
+                      polygon.set("stroke", am5.color(0x3B82F6)); // Tailwind blue-500
+                      polygon.set("strokeWidth", 2);
+                      selectedPolygonRef.current = polygon;
+                      // chart?.zoomToDataItem(polygon.dataItem as am5.DataItem<am5map.IMapPolygonSeriesDataItem>);
+                      return; // Exit early
+                  }
+              });
+          }
+      }
   };
 
-  const renderLegend = () => {
-    return (
-      <div className="absolute bottom-5 right-5 bg-white p-3 rounded shadow z-50">
-        <div className="text-sm font-bold mb-2">AI Readiness Score</div>
-        <div className="flex items-center mb-1">
-          <div className="w-4 h-4 mr-2" style={{ backgroundColor: getColor(0.1) }}></div>
-          <span className="text-xs">Low (0.1-0.3)</span>
-        </div>
-        <div className="flex items-center mb-1">
-          <div className="w-4 h-4 mr-2" style={{ backgroundColor: getColor(0.4) }}></div>
-          <span className="text-xs">Medium (0.3-0.5)</span>
-        </div>
-        <div className="flex items-center mb-1">
-          <div className="w-4 h-4 mr-2" style={{ backgroundColor: getColor(0.6) }}></div>
-          <span className="text-xs">High (0.5-0.7)</span>
-        </div>
-        <div className="flex items-center">
-          <div className="w-4 h-4 mr-2" style={{ backgroundColor: getColor(0.8) }}></div>
-          <span className="text-xs">Very High (0.7-0.9)</span>
-        </div>
-      </div>
-    );
-  };
-
-  if (loading) {
-    return <div className="flex items-center justify-center h-96">Loading map data...</div>;
-  }
-
-  if (error) {
-    return <div className="text-red-500">Error: {error}</div>;
-  }
 
   return (
-    <div className="relative w-full h-96 md:h-screen">
-      {geoJsonData && (
-        <MapContainer
-          center={[20, 0]}
-          zoom={2}
-          className="h-full w-full"
-          ref={mapRef}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          <GeoJSON
-            data={geoJsonData}
-            style={countryStyle}
-            onEachFeature={onEachFeature}
-            ref={geoJsonRef}
-          />
-          {renderLegend()}
-        </MapContainer>
-      )}
+    <div className="flex flex-col w-full h-screen bg-gray-100 p-4 md:p-6 overflow-hidden">
+      <div className="flex flex-col md:flex-row w-full h-full gap-4 md:gap-6">
+        {/* Left column - Map and Scale */}
+        <div className="flex flex-col w-full md:w-2/3 h-full md:max-h-full">
+          <div className="flex-grow flex flex-col bg-white rounded-xl shadow-lg p-4 md:p-6 overflow-hidden">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-1">Global AI Readiness Index</h1>
+            <p className="text-sm text-gray-600 mb-3 md:mb-4">Click on a country or list item for details.</p>
+            <div ref={chartDivRef} id="chartdiv" className="w-full flex-grow min-h-[300px] md:min-h-[400px]" />
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-2 md:p-4 mt-4 md:mt-6">
+            <ColorScaleLegend />
+          </div>
+        </div>
+
+        {/* Right column - Country details and rankings */}
+        <div className="flex flex-col w-full md:w-1/3 h-full md:max-h-full overflow-hidden">
+          <CountryDetail country={selectedCountry} />
+          <div className="flex-grow overflow-hidden"> {/* Ensure ranking list takes remaining space and scrolls */}
+            <CountryRankings selectedCountry={selectedCountry} onCountrySelect={handleSelectCountryFromList} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
