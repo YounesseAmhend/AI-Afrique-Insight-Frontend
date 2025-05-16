@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@amcharts/amcharts5": "^5.12.2",
+    "@amcharts/amcharts5-geodata": "^5.1.4",
     "@highcharts/map-collection": "^2.3.0",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "1.2.2",
