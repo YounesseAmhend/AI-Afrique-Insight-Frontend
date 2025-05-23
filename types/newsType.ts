@@ -12,7 +12,7 @@ export interface NewsResponseDto {
   category?: string;
 }
 
-//again just in case  we will add this :
+// again just in case we will add this :  //* probably never
 
 // export interface NewsRequestDto {
 //   title: string;
