@@ -1,7 +1,6 @@
 "use client"; // If this is an App Router page.tsx
 
 import dynamic from 'next/dynamic';
-import Header from "@/components/header"; // Assuming you have this
 
 // Dynamically import the map component with no SSR
 const AIReadinessMapWithNoSSR = dynamic(
@@ -12,10 +11,7 @@ const AIReadinessMapWithNoSSR = dynamic(
 export default function Home() {
   return (
     <>
-      <Header /> {/* Your existing header */}
-      <main>
-        <AIReadinessMapWithNoSSR />
-      </main>
+      <AIReadinessMapWithNoSSR />
     </>
   );
 }
