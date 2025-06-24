@@ -81,9 +81,9 @@ export default function NewsDetailPage() {
               <span className="text-sm text-muted-foreground">
                 {formatDate(news.postDate)}
               </span>
-              <span className="text-sm text-muted-foreground">
-                By {news.author}
-              </span>
+              <a className="text-sm text-muted-foreground" href={"/author/"+news.author!.id}>
+                By {news.author!.name}
+              </a>
             </div>
 
             {news.imageUrl && (

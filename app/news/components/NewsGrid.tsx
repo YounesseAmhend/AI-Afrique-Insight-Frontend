@@ -3,7 +3,7 @@
 import NewsCard from "@/components/news-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useGetAllNews } from "@/hooks/useNewsQuery";
+import { NewsResponseDto } from "@/types/newsType";
 import { Filter, Newspaper } from "lucide-react";
 import { useState } from "react";
 
@@ -43,18 +43,26 @@ const getRelativeTime = (dateString: string): string => {
     }
 };
 
-export default function NewsGrid() {
+interface Props {
+    items: NewsResponseDto[];
+    isLoading: boolean;
+    error: Error | null;
+    title?: String;
+}
+
+export default function NewsGrid(props: Props) {
     const [activeCategory, setActiveCategory] = useState("All");
     const [visibleItems, setVisibleItems] = useState(6);
 
+    const { title, items, isLoading, error } = props;
     // Use the custom hook to fetch news data
-    const { data: newsItems = [], isLoading, error } = useGetAllNews();
+    const gridTitle = title || "Latest AI News";
 
     // Filter news items based on active category
     const filteredItems =
         activeCategory === "All"
-            ? newsItems
-            : newsItems.filter((item) => item.category === activeCategory);
+            ? items
+            : items.filter((item) => item.category === activeCategory);
 
     const displayedItems = filteredItems.slice(0, visibleItems);
 
@@ -97,7 +105,7 @@ export default function NewsGrid() {
             <section className='space-y-6'>
                 <h2 className='text-2xl font-bold flex items-center gap-2'>
                     <Newspaper className='h-5 w-5 text-primary' />
-                    Latest AI News
+                    {gridTitle}
                 </h2>
                 <div className='flex flex-col items-center justify-center py-12 text-center'>
                     <Newspaper className='h-12 w-12 text-muted-foreground mb-4' />
@@ -118,7 +126,7 @@ export default function NewsGrid() {
             <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
                 <h2 className='text-2xl font-bold flex items-center gap-2'>
                     <Newspaper className='h-5 w-5 text-primary' />
-                    Latest AI News
+                    {gridTitle}
                 </h2>
 
                 <div className='flex items-center space-x-1 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar'>

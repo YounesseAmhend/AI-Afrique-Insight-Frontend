@@ -1,10 +1,12 @@
+import { Author } from "./authorType";
 
 // TypeScript interfaces for news data
 export interface NewsResponseDto {
   id: string;
   title: string;
   body: string;
-  author: string;
+  authorId: number;
+  author: Author | null;
   postDate: string;
   imageUrl: string | null;
   url: string;

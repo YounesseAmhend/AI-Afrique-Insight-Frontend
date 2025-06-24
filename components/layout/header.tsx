@@ -20,8 +20,10 @@ export default function Header() {
         { name: "News", href: "/news" },
         { name: "Companies", href: "/companies" },
         { name: "Research", href: "/research" },
+        { name: "Authors", href: "/author" },
+
+        { name: "Map", href: "/map" },
         { name: "About", href: "/about" },
-        { name: "map", href: "/map" },
     ];
 
     useEffect(() => {

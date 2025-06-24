@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { newsApi } from '../apis/newsApi';
 
