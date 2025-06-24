@@ -4,6 +4,47 @@
 
 @import "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
 
+.section-heading {
+  @apply text-2xl font-bold mt-8 mb-4 text-primary dark:text-primary-foreground;
+}
+
+.subsection-heading {
+  @apply text-lg font-semibold mt-6 mb-3 text-foreground dark:text-primary-foreground;
+}
+
+.bold-text {
+  @apply font-medium text-primary dark:text-primary-foreground;
+}
+
+.quote {
+  @apply italic text-muted-foreground border-l-4 border-primary pl-4 my-4;
+}
+
+.bullet-list {
+  @apply list-disc pl-6 space-y-1 text-foreground dark:text-primary-foreground my-4;
+}
+
+.step-list {
+  @apply list-decimal pl-6 space-y-1 text-foreground dark:text-primary-foreground my-4;
+}
+
+.image-placeholder {
+  @apply w-full h-48 bg-secondary/20 rounded-lg my-6 flex items-center justify-center text-muted-foreground text-base;
+}
+
+.text-paragraph {
+  @apply text-base leading-relaxed text-foreground dark:text-primary-foreground mb-4;
+}
+
+.hide-scrollbar {
+  @apply scrollbar-hide;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  @apply hidden;
+}
+
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -72,6 +113,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -82,6 +124,7 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }

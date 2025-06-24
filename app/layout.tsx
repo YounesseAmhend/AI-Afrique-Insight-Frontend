@@ -1,3 +1,5 @@
+
+
 import Footer from "@/components/layout/footer"
 import Header from "@/components/layout/header"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -14,7 +16,7 @@ export const metadata = {
   description: "Your trusted source for the latest AI news, research, and industry developments.",
 }
 
-export default function RootLayout({
+export default  function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
@@ -31,6 +33,7 @@ export default function RootLayout({
               </Providers>
             </ThemeProvider>
           </main>
+          
 
           <Footer />
         </div>

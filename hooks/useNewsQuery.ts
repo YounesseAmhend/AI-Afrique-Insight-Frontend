@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { newsApi } from '../services/newsService';
+import { newsApi } from '../apis/newsApi';
 
 // Query keys for React Query
 export const newsKeys = {
