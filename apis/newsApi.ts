@@ -21,20 +21,4 @@ export const newsApi = {
         return response.data;
     },
 
-    // Create a new news item (for future use) maybe but we will try to handle it or have a clear way of handling it
-    //   createNews: async (newsData: NewsRequestDto): Promise<NewsResponseDto> => {
-    //     const response = await api.post<NewsResponseDto>('/news/featured', newsData);
-    //     return response.data;
-    //   },
-
-    // Update a news item (for future use)  same bulshit
-    //   updateNews: async (id: number, newsData: NewsRequestDto): Promise<NewsResponseDto> => {
-    //     const response = await api.put<NewsResponseDto>(`/news/${id}`, newsData);
-    //     return response.data;
-    //   },
-
-    //   // Delete a news item (for future use)  same bulshit but we probably will not alow to delete . we will just sell the cow in the front end
-    //   deleteNews: async (id: number): Promise<void> => {
-    //     await api.delete(`/news/${id}`);
-    //   }
 };
