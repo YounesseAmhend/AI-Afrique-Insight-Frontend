@@ -37,4 +37,25 @@ export const newsApi = {
     //   deleteNews: async (id: number): Promise<void> => {
     //     await api.delete(`/news/${id}`);
     //   }
+
+    downloadNewsAsCsv: async (): Promise<void> => {
+        try {
+            const response = await api.get('/download/news.csv', {
+                responseType: 'blob', 
+            });
+            const blob = new Blob([response.data], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'news_export.csv'); //suggested filename can be chnged if needed
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+        } catch (error) {
+            console.error("Failed to download CSV file:", error);
+            throw new Error("Could not download the file. Please try again.");
+        }
+    }
 };

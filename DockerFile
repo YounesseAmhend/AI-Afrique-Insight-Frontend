@@ -1,0 +1,40 @@
+# Stage 1: Builder - Install dependencies and build the project
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Copy package.json and lock files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application source code
+COPY . .
+
+# Build the Next.js application
+# Ensure next.config.js is set up for standalone output
+RUN npm run build
+
+# Stage 2: Runner - Create the final, small production image
+FROM node:18-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# The official node image creates a user and group named 'node'.
+# We are creating a user and group with the same name and ID.
+# This is a good practice for security.
+# https://github.com/nodejs/docker-node/blob/main/docs/Best-Practices.md#non-root-user
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+COPY --from=builder --chown=node:node /app/.next/static ./.next/static
+
+# Switch to the non-root user
+USER node
+
+EXPOSE 3000
+
+# Set the default command to run the app
+CMD ["node", "server.js"]

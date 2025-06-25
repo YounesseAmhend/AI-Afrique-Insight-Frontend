@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Globe, Menu, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { newsApi } from "@/apis/newsApi";
 
 export default function Header() {
     const isMobile = useMobile();
@@ -25,6 +26,20 @@ export default function Header() {
         { name: "Map", href: "/map" },
         { name: "About", href: "/about" },
     ];
+
+    const handleDownload = async () => {
+        console.log("Download button clicked. Calling API...");
+        try {
+            await newsApi.downloadNewsAsCsv();
+            console.log("Download initiated successfully.");
+        } catch (error) {
+            if (error instanceof Error) {
+                alert(error.message);
+            } else {
+                alert("An unknown error occurred during download.");
+            }
+        }
+    };
 
     useEffect(() => {
         const handleScroll = () => {
@@ -101,14 +116,13 @@ export default function Header() {
 
                         <ThemeSwitch />
 
-                        {/* Globe icon */}
                         <Button
+                            onClick={handleDownload}
                             variant='ghost'
-                            size='icon'
-                            className='flex items-center justify-center h-9 w-9 rounded-full bg-cyan-500/50 hover:bg-cyan-500 transition-colors duration-200'
-                            aria-label='Globe'
+                            className='h-9 bg-cyan-500/50 hover:bg-cyan-500 text-white transition-colors duration-200 px-4'
+                            aria-label='Download DataSet'
                         >
-                            <Globe className='h-5 w-5 text-white' href='/map' />
+                            Data-Set
                         </Button>
 
                         {isMobile && (
