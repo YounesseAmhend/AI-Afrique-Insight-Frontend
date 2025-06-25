@@ -77,13 +77,16 @@ export default function NewsDetailPage() {
             <h1 className="text-3xl md:text-4xl font-bold mb-4">{news.title}</h1>
 
             <div className="flex flex-wrap items-center gap-3 mb-6">
-              <Badge>{news.category || 'Uncategorized'}</Badge>
+              <Badge>{news.category.name || 'Uncategorized'}</Badge>
               <span className="text-sm text-muted-foreground">
                 {formatDate(news.postDate)}
               </span>
-              <a className="text-sm text-muted-foreground" href={"/author/"+news.author!.id}>
-                By {news.author!.name}
-              </a>
+              <span className="text-sm text-muted-foreground">
+                By{' '}
+                <a className="hover:text-primary hover:underline underline-offset-4 transition-all duration-200" href={"/author/"+news.author!.id}>
+                  {news.author!.name}
+                </a>
+              </span>
             </div>
 
             {news.imageUrl && (

@@ -3,20 +3,12 @@
 import NewsCard from "@/components/news-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { categoryColors, getCategoryColor } from "@/lib/categoryColors";
 import { NewsResponseDto } from "@/types/newsType";
 import { Filter, Newspaper } from "lucide-react";
 import { useState } from "react";
 
-const categories = [
-    "All",
-    "Research",
-    "Industry",
-    "Policy",
-    "Hardware",
-    "Media",
-    "Transportation",
-    "Language",
-];
+const categories: string[] =  ['All', ...Object.keys(categoryColors)];
 
 // Helper function to format date to relative time
 const getRelativeTime = (dateString: string): string => {
@@ -62,7 +54,7 @@ export default function NewsGrid(props: Props) {
     const filteredItems =
         activeCategory === "All"
             ? items
-            : items.filter((item) => item.category === activeCategory);
+            : items.filter((item) => item.category.name === activeCategory);
 
     const displayedItems = filteredItems.slice(0, visibleItems);
 

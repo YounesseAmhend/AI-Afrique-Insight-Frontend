@@ -2,14 +2,17 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
+import { CategoryResponseDto } from "@/types/categoryType"
+import { getCategoryColor } from "@/lib/categoryColors"
 
 type NewsCardProps = {
   title: string
   description: string
   image: string
-  category: string
+  category: CategoryResponseDto
   time: string
   url: string
+
   externalUrl?: string
   size?: "small" | "medium" | "large"
 }
@@ -56,9 +59,16 @@ export default function NewsCard({
       </Link>
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-2">
-          <Badge variant="secondary" className="text-xs">
-            {category}
-          </Badge>
+          <a 
+            href={`/category/${category.id}`}
+            className="text-xs px-2 py-1 rounded-full"
+            style={{ 
+              backgroundColor: getCategoryColor(category.name),
+              color: '#fff'
+            }}
+          >
+            {category.name}
+          </a>
           <span className="text-xs text-muted-foreground">{time}</span>
         </div>
         <Link href={url} className="block">
