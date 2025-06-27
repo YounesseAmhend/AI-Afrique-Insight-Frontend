@@ -1,17 +1,18 @@
 import { Author } from "./authorType";
+import { CategoryResponseDto } from "./categoryType";
 
 // TypeScript interfaces for news data
 export interface NewsResponseDto {
   id: string;
   title: string;
   body: string;
-  authorId: number;
   author: Author | null;
   postDate: string;
   imageUrl: string | null;
   url: string;
+  viewsCount: number;
   createdAt: null;
-  category?: string;
+  category: CategoryResponseDto;
 }
 
 // again just in case we will add this :  //* probably never // True.

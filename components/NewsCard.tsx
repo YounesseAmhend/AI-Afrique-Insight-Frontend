@@ -2,22 +2,26 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
+import { CategoryResponseDto } from "@/types/categoryType"
+import { getCategoryColor } from "@/lib/categoryColors"
+import { NewsResponseDto } from "@/types/newsType"
 
 type NewsCardProps = {
-  title: string
   description: string
   image: string
-  category: string
+  category: CategoryResponseDto
   time: string
   url: string
+  item: NewsResponseDto
+
   externalUrl?: string
   size?: "small" | "medium" | "large"
 }
 
 export default function NewsCard({ 
-  title, 
-  description, 
   image, 
+  item,
+  description,
   category, 
   time, 
   url, 
@@ -48,7 +52,7 @@ export default function NewsCard({
         <div className={`relative ${imageHeight[size]} overflow-hidden`}>
           <img
             src={image || "/placeholder.svg"}
-            alt={title}
+            alt={item.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -56,13 +60,27 @@ export default function NewsCard({
       </Link>
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-2">
-          <Badge variant="secondary" className="text-xs">
-            {category}
-          </Badge>
-          <span className="text-xs text-muted-foreground">{time}</span>
+          <a 
+            href={`/category/${category.id}`}
+            className="text-xs px-2 py-1 rounded-full"
+            style={{ 
+              backgroundColor: getCategoryColor(category.name),
+              color: '#fff'
+            }}
+          >
+            {category.name}
+          </a>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">{time}</span>
+            {item.viewsCount >= 0 && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                • {item.viewsCount} views
+              </span>
+            )}
+          </div>
         </div>
         <Link href={url} className="block">
-          <h3 className={`font-bold mb-2 ${titleSize[size]} group-hover:text-primary transition-colors cursor-pointer`}>{title}</h3>
+          <h3 className={`font-bold mb-2 ${titleSize[size]} group-hover:text-primary transition-colors cursor-pointer`}>{item.title}</h3>
         </Link>
         <p className={`text-muted-foreground mb-4 ${descriptionSize[size]}`}>{description}</p>
         {externalUrl && (

@@ -21,6 +21,7 @@ export const newsApi = {
         return response.data;
     },
 
+<<<<<<< HEAD
     // Create a new news item (for future use) maybe but we will try to handle it or have a clear way of handling it
     //   createNews: async (newsData: NewsRequestDto): Promise<NewsResponseDto> => {
     //     const response = await api.post<NewsResponseDto>('/news/featured', newsData);
@@ -56,6 +57,16 @@ export const newsApi = {
         } catch (error) {
             console.error("Failed to download CSV file:", error);
             throw new Error("Could not download the file. Please try again.");
+=======
+    // Get trending news
+    getTrendingNews: async (): Promise<NewsResponseDto[]> => {
+        try {
+            const response = await api.get<NewsResponseDto[]>("/news/trending");
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch trending news:", error);
+            throw new Error("Failed to load trending news. Please try again later.");
+>>>>>>> 285831fb85dac007965e8382270c9d78a0a45cb1
         }
     }
 };

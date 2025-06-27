@@ -1,22 +1,15 @@
 "use client";
 
-import NewsCard from "@/components/news-card";
+import NewsCard from "@/components/NewsCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { categoryColors, getCategoryColor } from "@/lib/categoryColors";
 import { NewsResponseDto } from "@/types/newsType";
-import { Filter, Newspaper } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
+import { ChevronDown, Filter, Newspaper } from "lucide-react";
 import { useState } from "react";
 
-const categories = [
-    "All",
-    "Research",
-    "Industry",
-    "Policy",
-    "Hardware",
-    "Media",
-    "Transportation",
-    "Language",
-];
+const categories: string[] =  ['All', ...Object.keys(categoryColors), "Uncategorized"];
 
 // Helper function to format date to relative time
 const getRelativeTime = (dateString: string): string => {
@@ -46,6 +39,7 @@ const getRelativeTime = (dateString: string): string => {
 interface Props {
     items: NewsResponseDto[];
     isLoading: boolean;
+    showCategoryFilter?: boolean
     error: Error | null;
     title?: String;
 }
@@ -54,7 +48,7 @@ export default function NewsGrid(props: Props) {
     const [activeCategory, setActiveCategory] = useState("All");
     const [visibleItems, setVisibleItems] = useState(6);
 
-    const { title, items, isLoading, error } = props;
+    const { title, items, isLoading, error,showCategoryFilter } = props;
     // Use the custom hook to fetch news data
     const gridTitle = title || "Latest AI News";
 
@@ -62,7 +56,7 @@ export default function NewsGrid(props: Props) {
     const filteredItems =
         activeCategory === "All"
             ? items
-            : items.filter((item) => item.category === activeCategory);
+            : items.filter((item) => item.category.name === activeCategory);
 
     const displayedItems = filteredItems.slice(0, visibleItems);
 
@@ -128,31 +122,47 @@ export default function NewsGrid(props: Props) {
                     <Newspaper className='h-5 w-5 text-primary' />
                     {gridTitle}
                 </h2>
-
-                <div className='flex items-center space-x-1 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar'>
-                    <Filter className='h-4 w-4 text-muted-foreground mr-1 flex-shrink-0' />
-                    {categories.map((category) => (
-                        <Badge
-                            key={category}
-                            variant={
-                                activeCategory === category
-                                    ? "default"
-                                    : "outline"
-                            }
-                            className={`cursor-pointer px-3 py-1 text-xs rounded-full whitespace-nowrap ${
-                                activeCategory === category
-                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                    : "hover:bg-secondary/50"
-                            }`}
-                            onClick={() => {
-                                setActiveCategory(category);
+                {(showCategoryFilter || showCategoryFilter == null) && (
+                    <div className='relative'>
+                        <select
+                            value={activeCategory || ""}
+                            onChange={(e) => {
+                                setActiveCategory(e.target.value);
                                 setVisibleItems(6);
                             }}
+                            className='flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors appearance-none bg-gray-50 dark:bg-gray-900 text-sm font-medium cursor-pointer focus:ring-2 focus:ring-primary focus:outline-none w-48'
                         >
-                            {category}
-                        </Badge>
-                    ))}
-                </div>
+                            {categories.map((category) => (
+                                <option
+                                    key={category}
+                                    value={category}
+                                    className={`px-4 py-2 hover:bg-[${getCategoryColor(
+                                        category,
+                                    )}] ${
+                                        activeCategory === category
+                                            ? "bg-primary/10 dark:bg-primary/20 font-medium"
+                                            : "text-gray-900 dark:text-gray-100"
+                                    }`}
+                                    style={{
+                                        backgroundColor:
+                                            activeCategory === category
+                                                ? "rgba(59, 130, 246, 0.1)"
+                                                : "inherit",
+                                        color:
+                                            activeCategory === category
+                                                ? "inherit"
+                                                : "inherit",
+                                    }}
+                                >
+                                    {category}
+                                </option>
+                            ))}
+                        </select>
+                        <div className='pointer-events-none absolute inset-y-0 right-3 flex items-center'>
+                            <ChevronDown className='h-4 w-4 text-gray-400 dark:text-gray-500' />
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
@@ -165,12 +175,12 @@ export default function NewsGrid(props: Props) {
                     return (
                         <NewsCard
                             key={item.id || index}
-                            title={item.title}
                             description={plainTextBody}
                             image={
                                 item.imageUrl ||
                                 "/placeholder.svg?height=300&width=500"
                             }
+                            item={item}
                             category={item.category || "Uncategorized"}
                             time={getRelativeTime(item.postDate)}
                             url={`/news/${item.id}`}
