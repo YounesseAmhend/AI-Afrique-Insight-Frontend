@@ -5,6 +5,7 @@ import { newsApi } from '../apis/newsApi';
 // Query keys for React Query
 export const newsKeys = {
   all: ['news'] as const,
+  trending:  ['trendingNews'] as const,
   lists: () => [...newsKeys.all, 'list'] as const,
   list: (filters: string) => [...newsKeys.lists(), { filters }] as const,
   details: () => [...newsKeys.all, 'detail'] as const,
@@ -28,7 +29,15 @@ export const useGetNewsById = (id: number) => {
   });
 };
 
-// // Hook for creating a news item (for future use)
+// Hook for getting trending news
+export const useGetTrendingNews = () => {
+  return useQuery({
+    queryKey: ['trendingNews'],
+    queryFn: newsApi.getTrendingNews,
+  });
+};
+
+//  // Hook for creating a news item (for future use)
 // export const useCreateNews = () => {
 //   const queryClient = useQueryClient();
   

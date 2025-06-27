@@ -88,8 +88,8 @@ export function SourcesTable() {
                                         rel='noopener noreferrer'
                                         title={source.url}
                                     >
-                                        {source.url}
                                         <ArrowUpRight className='w-4 h-4 flex-shrink-0' />
+                                        {source.url}
                                     </Link>
                                 </td>
                                 <td className='px-6 py-4 text-center'>

@@ -10,6 +10,7 @@ export interface NewsResponseDto {
   postDate: string;
   imageUrl: string | null;
   url: string;
+  viewsCount: number;
   createdAt: null;
   category: CategoryResponseDto;
 }

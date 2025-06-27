@@ -21,4 +21,14 @@ export const newsApi = {
         return response.data;
     },
 
+    // Get trending news
+    getTrendingNews: async (): Promise<NewsResponseDto[]> => {
+        try {
+            const response = await api.get<NewsResponseDto[]>("/news/trending");
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch trending news:", error);
+            throw new Error("Failed to load trending news. Please try again later.");
+        }
+    }
 };

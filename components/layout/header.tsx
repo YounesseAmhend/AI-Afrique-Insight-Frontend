@@ -20,8 +20,6 @@ export default function Header() {
         { name: "News", href: "/news" },
         { name: "Categories", href: "/category" },
 
-        { name: "Companies", href: "/companies" },
-        { name: "Research", href: "/research" },
         { name: "Authors", href: "/author" },
         { name: "Admin", href: "/admin" },
 
