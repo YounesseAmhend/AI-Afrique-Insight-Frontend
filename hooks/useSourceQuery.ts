@@ -21,6 +21,29 @@ export function useAddSource() {
   });
 }
 
+// Update source URL
+export function useUpdateSourceUrl() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, newUrl }: { id: number; newUrl: string }) => 
+      sourceApi.updateSourceUrl(id, newUrl),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sources"] });
+    },
+  });
+}
+
+// Delete a source
+export function useDeleteSource() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => sourceApi.deleteSource(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sources"] });
+    },
+  });
+}
+
 // Trigger scraping
 export function useScrapeSources() {
   return useMutation({

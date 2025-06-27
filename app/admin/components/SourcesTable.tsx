@@ -1,8 +1,11 @@
 "use client";
 import Link from "@/components/link";
-import { useGetSources } from "@/hooks/useSourceQuery";
-import { ArrowUpRight, Check, Loader2, X } from "lucide-react";
+import { useGetSources, useDeleteSource, useUpdateSourceUrl } from "@/hooks/useSourceQuery";
+import { ArrowUpRight, Check, Loader2, X, Edit, Trash } from "lucide-react";
 import { StatusBadge } from "./StatusBadge";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 function formatDate(dateString?: string | null) {
     if (!dateString) return "-";
@@ -21,6 +24,28 @@ function formatDate(dateString?: string | null) {
 
 export function SourcesTable() {
     const { data: sources, isLoading, isError, error } = useGetSources();
+    const deleteSourceMutation = useDeleteSource();
+    const updateSourceUrlMutation = useUpdateSourceUrl();
+    const [editingSourceId, setEditingSourceId] = useState<number | null>(null);
+    const [newUrl, setNewUrl] = useState("");
+
+    const handleDelete = async (id: number) => {
+        try {
+            await deleteSourceMutation.mutateAsync(id);
+        } catch (error) {
+            console.error("Failed to delete source:", error);
+        }
+    };
+
+    const handleUpdateUrl = async (id: number) => {
+        try {
+            await updateSourceUrlMutation.mutateAsync({ id, newUrl });
+            setEditingSourceId(null);
+            setNewUrl("");
+        } catch (error) {
+            console.error("Failed to update source URL:", error);
+        }
+    };
 
     return (
         <div className='overflow-x-auto rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900'>
@@ -45,12 +70,15 @@ export function SourcesTable() {
                         <th className='px-6 py-4 text-center text-white font-medium'>
                             Updated At
                         </th>
+                        <th className='px-6 py-4 text-center text-white font-medium'>
+                            Actions
+                        </th>
                     </tr>
                 </thead>
                 <tbody className='divide-y divide-gray-100 dark:divide-gray-800'>
                     {isLoading ? (
                         <tr>
-                            <td colSpan={6} className='px-6 py-8 text-center'>
+                            <td colSpan={7} className='px-6 py-8 text-center'>
                                 <div className='flex justify-center'>
                                     <Loader2 className='animate-spin w-8 h-8 text-gray-500' />
                                 </div>
@@ -59,7 +87,7 @@ export function SourcesTable() {
                     ) : isError ? (
                         <tr>
                             <td
-                                colSpan={6}
+                                colSpan={7}
                                 className='px-6 py-8 text-center text-red-600'
                             >
                                 <div className='flex items-center gap-2'>
@@ -73,24 +101,40 @@ export function SourcesTable() {
                         sources.map((source) => (
                             <tr key={source.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                 <td className='px-6 py-4 max-w-[260px]'>
-                                    <Link
-                                        href={source.url}
-                                        className='inline-flex items-center gap-2 text-cyan-700 dark:text-cyan-300 font-medium hover:underline whitespace-nowrap overflow-hidden text-ellipsis max-w-full'
-                                        style={{
-                                            display: "inline-flex",
-                                            maxWidth: "220px",
-                                            whiteSpace: "nowrap",
-                                            overflow: "hidden",
-                                            textOverflow: "ellipsis",
-                                            verticalAlign: "middle",
-                                        }}
-                                        target='_blank'
-                                        rel='noopener noreferrer'
-                                        title={source.url}
-                                    >
-                                        <ArrowUpRight className='w-4 h-4 flex-shrink-0' />
-                                        {source.url}
-                                    </Link>
+                                    {editingSourceId === source.id ? (
+                                        <div className="flex gap-2">
+                                            <Input
+                                                value={newUrl}
+                                                onChange={(e) => setNewUrl(e.target.value)}
+                                                placeholder="Enter new URL"
+                                            />
+                                            <Button
+                                                size="sm"
+                                                onClick={() => handleUpdateUrl(source.id)}
+                                            >
+                                                Save
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <Link
+                                            href={source.url}
+                                            className='inline-flex items-center gap-2 text-cyan-700 dark:text-cyan-300 font-medium hover:underline whitespace-nowrap overflow-hidden text-ellipsis max-w-full'
+                                            style={{
+                                                display: "inline-flex",
+                                                maxWidth: "220px",
+                                                whiteSpace: "nowrap",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                                verticalAlign: "middle",
+                                            }}
+                                            target='_blank'
+                                            rel='noopener noreferrer'
+                                            title={source.url}
+                                        >
+                                            <ArrowUpRight className='w-4 h-4 flex-shrink-0' />
+                                            {source.url}
+                                        </Link>
+                                    )}
                                 </td>
                                 <td className='px-6 py-4 text-center'>
                                     {source.triggerAi ? (
@@ -115,11 +159,32 @@ export function SourcesTable() {
                                 <td className='px-6 py-4 text-center'>
                                     {formatDate(source.updatedAt)}
                                 </td>
+                                <td className='px-6 py-4 text-center'>
+                                    <div className="flex gap-2 justify-center">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => {
+                                                setEditingSourceId(source.id);
+                                                setNewUrl(source.url);
+                                            }}
+                                        >
+                                            <Edit className="w-4 h-4" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => handleDelete(source.id)}
+                                        >
+                                            <Trash className="w-4 h-4 text-red-600" />
+                                        </Button>
+                                    </div>
+                                </td>
                             </tr>
                         ))
                     ) : (
                         <tr>
-                            <td colSpan={6} className='text-center py-4'>
+                            <td colSpan={7} className='text-center py-4'>
                                 No sources found.
                             </td>
                         </tr>
