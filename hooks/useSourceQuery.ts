@@ -25,8 +25,8 @@ export function useAddSource() {
 export function useUpdateSourceUrl() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, newUrl }: { id: number; newUrl: string }) => 
-      sourceApi.updateSourceUrl(id, newUrl),
+    mutationFn: ({ id, url, containsAiContent, containsAfricaContent }: { id: number; url: string; containsAiContent: boolean; containsAfricaContent: boolean }) =>
+      sourceApi.updateSourceUrl(id, { url, containsAiContent, containsAfricaContent }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sources"] });
     },

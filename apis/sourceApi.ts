@@ -18,9 +18,12 @@ export const sourceApi = {
     return response.data;
   },
 
-  // Update source URL
-  updateSourceUrl: async (id: number, newUrl: string): Promise<Source> => {
-    const response = await api.patch<Source>(`/admin/source/${id}`, newUrl);
+  // Update source URL and other fields
+  updateSourceUrl: async (
+    id: number,
+    data: { url: string; containsAiContent: boolean; containsAfricaContent: boolean }
+  ): Promise<Source> => {
+    const response = await api.patch<Source>(`/admin/source/${id}`, data);
     return response.data;
   },
 
