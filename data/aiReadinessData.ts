@@ -134,7 +134,7 @@ export const aiReadinessDataArray: AIReadinessCountryData[] = [
   { id: "VC", name: "Saint Vincent and the Grenadines", value: 0.3418518081 },
   { id: "SA", name: "Saudi Arabia", value: 0.5769030005 },
   { id: "SN", name: "Senegal", value: 0.3959680274 },
-  { id: "RS", name: "Serbia", value: 0.5374747142 },
+  { id: "RS", name: "Republic of Serbia", value: 0.5374747142 },
   { id: "SC", name: "Seychelles", value: 0.5306526497 },
   { id: "SL", name: "Sierra Leone", value: 0.2978129052 },
   { id: "SG", name: "Singapore", value: 0.800566718 },

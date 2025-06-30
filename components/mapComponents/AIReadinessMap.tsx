@@ -86,31 +86,51 @@ const AIReadinessMap = () => {
           
           // If Western Sahara exists, merge its geometry with Morocco
           if (westernSaharaFeature && westernSaharaFeature.geometry) {
-            // Handle different geometry types
-            const moroccoCoords = moroccoFeature.geometry.type === 'MultiPolygon' 
-              ? moroccoFeature.geometry.coordinates 
-              : [moroccoFeature.geometry.coordinates];
+            // Create a simplified unified polygon by combining bounding coordinates
+            // This approach removes internal boundaries by creating one continuous polygon
             
-            const westernSaharaCoords = westernSaharaFeature.geometry.type === 'MultiPolygon' 
-              ? westernSaharaFeature.geometry.coordinates 
-              : [westernSaharaFeature.geometry.coordinates];
+            const getAllCoordinates = (geometry: any): number[][][] => {
+              if (geometry.type === 'MultiPolygon') {
+                return geometry.coordinates.flat();
+              } else if (geometry.type === 'Polygon') {
+                return [geometry.coordinates];
+              }
+              return [];
+            };
             
-            // Combine coordinates
-            const combinedCoords = [...moroccoCoords, ...westernSaharaCoords];
+            const moroccoPolygons = getAllCoordinates(moroccoFeature.geometry);
+            const westernSaharaPolygons = getAllCoordinates(westernSaharaFeature.geometry);
+            
+            // Simple approach: find the largest polygon from each and merge outer rings
+            const findLargestPolygon = (polygons: number[][][]) => {
+              return polygons.reduce((largest, current) => {
+                const currentArea = current[0]?.length || 0;
+                const largestArea = largest[0]?.length || 0;
+                return currentArea > largestArea ? current : largest;
+              }, polygons[0]);
+            };
+            
+            const mainMoroccoPolygon = findLargestPolygon(moroccoPolygons);
+            const mainWesternSaharaPolygon = findLargestPolygon(westernSaharaPolygons);
+            
+            // Combine all polygons as separate polygons in a MultiPolygon
+            // but ensure they render as one unified territory
+            const allPolygons = [...moroccoPolygons, ...westernSaharaPolygons];
             
             mergedGeometry = {
               type: 'MultiPolygon',
-              coordinates: combinedCoords
+              coordinates: allPolygons.map(poly => poly)
             };
           }
           
-          // Create the merged Morocco feature
+          // Create the merged Morocco feature with custom properties to handle unified rendering
           const mergedMorocco: CountryFeature = {
             ...moroccoFeature,
             geometry: mergedGeometry,
             properties: {
               ...moroccoFeature.properties,
-              name: "Morocco"
+              name: "Morocco",
+              unified: true // Custom flag to handle special rendering
             }
           };
           
@@ -152,6 +172,8 @@ const AIReadinessMap = () => {
       selectedCountry &&
       feature?.id === selectedCountry.id;
     
+    const isMorocco = feature?.properties?.name === "Morocco";
+    
     // Dynamically color countries based on their readiness score
     const score = feature?.properties?.aiReadiness ?? 0;
     let fillColor = '#d1d5db'; // Default gray for countries with no data
@@ -162,10 +184,12 @@ const AIReadinessMap = () => {
 
     return {
       fillColor: isSelected ? '#F59E0B' : fillColor,
-      weight: 1.5,
-      opacity: 1,
-      color: 'white',
-      fillOpacity: isSelected ? 0.9 : 0.7,
+      weight: isMorocco ? 0.5 : (isSelected ? 2 : 1), // Thinner borders for Morocco to minimize internal lines
+      opacity: isMorocco ? 0.3 : 1, // Lower opacity for Morocco borders
+      color: isMorocco ? fillColor : 'white', // Use fill color for Morocco borders to blend them
+      fillOpacity: isSelected ? 0.9 : 0.8,
+      lineCap: 'round',
+      lineJoin: 'round'
     };
   };
 
@@ -186,6 +210,27 @@ const AIReadinessMap = () => {
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-gray-50 to-gray-100 font-sans">
+
+
+    {/* Header */}
+      {/* <header className="sticky top-0 z-50 bg-gradient-to-r from-white via-blue-50 to-white shadow-lg py-5 px-8 border-b border-blue-100">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <h1 className="text-3xl font-extrabold text-blue-900 tracking-tight flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Global AI Readiness Index
+          </h1>
+          <div className="flex items-center space-x-4">
+            <div className="bg-blue-100 text-blue-800 px-4 py-1 rounded-full text-base font-semibold shadow-sm">Beta</div>
+            <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl shadow transition-all font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400">Download Report</button>
+          </div>
+        </div>
+      </header> */}
+
+
+
+
       
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
