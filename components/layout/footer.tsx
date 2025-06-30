@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Github, Twitter, Linkedin, Facebook, Rss, Youtube, Instagram, Mail } from "lucide-react"
+import { Github, Twitter, Linkedin, Facebook, Rss, Youtube, Instagram } from "lucide-react"
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -104,14 +104,15 @@ export default function Footer() {
             </ul>
 
             <div className="mt-6">
-              <h3 className="font-semibold text-white mb-2">Contact Us</h3>
-              <Link
-                href="mailto:info@ainewshub.com"
-                className="flex items-center text-sm text-gray-400 hover:text-white"
+              <h3 className="font-semibold text-white mb-2">Admin Access</h3>
+              <Button
+                asChild
+                className="bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                <Mail className="h-4 w-4 mr-2" />
-                info@ainewshub.com
-              </Link>
+                <Link href="/admin">
+                  Admin Panel
+                </Link>
+              </Button>
             </div>
           </div>
         </div>

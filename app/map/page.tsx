@@ -8,7 +8,6 @@ const AIReadinessMapWithNoSSR = dynamic(
   { 
     ssr: false,
     // Optional: add a loading component
-    loading: () => <p>Loading Map...</p> 
   }
 );
 
