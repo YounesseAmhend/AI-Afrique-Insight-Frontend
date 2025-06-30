@@ -34,11 +34,11 @@ export const aiReadinessDataArray: AIReadinessCountryData[] = [
   { id: "CF", name: "Central African Republic", value: 0.1844374854 },
   { id: "TD", name: "Chad", value: 0.2336060721 },
   { id: "CL", name: "Chile", value: 0.5857511684 },
-  { id: "CN", name: "China, People's Republic of", value: 0.6354544014 },
+  { id: "CN", name: "China", value: 0.6354544014 },
   { id: "CO", name: "Colombia", value: 0.4894939214 },
   { id: "KM", name: "Comoros", value: 0.2541744448 },
-  { id: "CD", name: "Congo, Dem. Rep. of the", value: 0.2474736646 },
-  { id: "CG", name: "Congo, Republic of", value: 0.2766119055 },
+  { id: "CD", name: "Democratic Republic of the Congo", value: 0.2474736646 },
+  { id: "CG", name: "Republic of the Congo", value: 0.2766119055 },
   { id: "CR", name: "Costa Rica", value: 0.5401517823 },
   { id: "HR", name: "Croatia", value: 0.5816958994 },
   { id: "CY", name: "Cyprus", value: 0.6323937923 },
@@ -128,13 +128,13 @@ export const aiReadinessDataArray: AIReadinessCountryData[] = [
   { id: "PT", name: "Portugal", value: 0.6460198164 },
   { id: "QA", name: "Qatar", value: 0.5345921367 },
   { id: "RO", name: "Romania", value: 0.5836483091 },
-  { id: "RU", name: "Russian Federation", value: 0.5592233092 },
+  { id: "RU", name: "Russia", value: 0.5592233092 },
   { id: "RW", name: "Rwanda", value: 0.4374002144 },
   { id: "LC", name: "Saint Lucia", value: 0.3741867021 },
   { id: "VC", name: "Saint Vincent and the Grenadines", value: 0.3418518081 },
   { id: "SA", name: "Saudi Arabia", value: 0.5769030005 },
   { id: "SN", name: "Senegal", value: 0.3959680274 },
-  { id: "RS", name: "Serbia", value: 0.5374747142 },
+  { id: "RS", name: "Republic of Serbia", value: 0.5374747142 },
   { id: "SC", name: "Seychelles", value: 0.5306526497 },
   { id: "SL", name: "Sierra Leone", value: 0.2978129052 },
   { id: "SG", name: "Singapore", value: 0.800566718 },
@@ -149,7 +149,7 @@ export const aiReadinessDataArray: AIReadinessCountryData[] = [
   { id: "CH", name: "Switzerland", value: 0.7570124269 },
   { id: "SY", name: "Syria", value: 0.2981490139 },
   { id: "TJ", name: "Tajikistan", value: 0.366445981 },
-  { id: "TZ", name: "Tanzania", value: 0.3524204865 },
+  { id: "TZ", name: "United Republic of Tanzania", value: 0.3524204865 },
   { id: "TH", name: "Thailand", value: 0.5357170999 },
   { id: "TL", name: "Timor-Leste", value: 0.427734755 },
   { id: "TG", name: "Togo", value: 0.3156863898 },
@@ -164,7 +164,6 @@ export const aiReadinessDataArray: AIReadinessCountryData[] = [
   { id: "YE", name: "Yemen", value: 0.2533275578 },
   { id: "ZM", name: "Zambia", value: 0.3707199767 },
   { id: "ZW", name: "Zimbabwe", value: 0.3047910891 }
-  // ... add all your other countries
 ];
 
 // Sort data by value for the rankings (descending)
