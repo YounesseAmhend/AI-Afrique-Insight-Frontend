@@ -60,23 +60,81 @@ const AIReadinessMap = () => {
         if (!response.ok) throw new Error('Failed to fetch country data');
         const geoJsonData = await response.json();
         
-        // 3. Merge the GeoJSON data with your AI readiness data
-        const mergedFeatures: CountryFeature[] = geoJsonData.features
-          .filter((f: CountryFeature) => f.properties.name !== "Antarctica")
-          .map((feature: CountryFeature) => {
-            const geoJsonName = feature.properties.name;
-            // Check for a mapped name first, otherwise use the original
-            const lookupName = COUNTRY_NAME_MAP[geoJsonName] || geoJsonName;
-            const readinessValue = readinessDataMap.get(lookupName);
+        // 3. Handle Morocco and Western Sahara merger
+        let moroccoFeature: CountryFeature | null = null;
+        let westernSaharaFeature: CountryFeature | null = null;
+        
+        // Find Morocco and Western Sahara features
+        const otherFeatures = geoJsonData.features.filter((f: CountryFeature) => {
+          if (f.properties.name === "Morocco") {
+            moroccoFeature = f;
+            return false;
+          } else if (f.properties.name === "Western Sahara") {
+            westernSaharaFeature = f;
+            return false;
+          } else if (f.properties.name === "Antarctica") {
+            return false;
+          }
+          return true;
+        });
 
-            // Add the aiReadiness score to the feature's properties
-            // The score is scaled from 0-1 to 0-100 and fixed to an integer
-            feature.properties.aiReadiness = readinessValue ? Math.round(readinessValue * 100) : 0;
+        // Merge Morocco and Western Sahara geometries
+        const mergedFeatures: CountryFeature[] = [];
+        
+        if (moroccoFeature) {
+          let mergedGeometry = moroccoFeature.geometry;
+          
+          // If Western Sahara exists, merge its geometry with Morocco
+          if (westernSaharaFeature && westernSaharaFeature.geometry) {
+            // Handle different geometry types
+            const moroccoCoords = moroccoFeature.geometry.type === 'MultiPolygon' 
+              ? moroccoFeature.geometry.coordinates 
+              : [moroccoFeature.geometry.coordinates];
+            
+            const westernSaharaCoords = westernSaharaFeature.geometry.type === 'MultiPolygon' 
+              ? westernSaharaFeature.geometry.coordinates 
+              : [westernSaharaFeature.geometry.coordinates];
+            
+            // Combine coordinates
+            const combinedCoords = [...moroccoCoords, ...westernSaharaCoords];
+            
+            mergedGeometry = {
+              type: 'MultiPolygon',
+              coordinates: combinedCoords
+            };
+          }
+          
+          // Create the merged Morocco feature
+          const mergedMorocco: CountryFeature = {
+            ...moroccoFeature,
+            geometry: mergedGeometry,
+            properties: {
+              ...moroccoFeature.properties,
+              name: "Morocco"
+            }
+          };
+          
+          mergedFeatures.push(mergedMorocco);
+        }
+        
+        // Add all other features
+        mergedFeatures.push(...otherFeatures);
+        
+        // 4. Merge the GeoJSON data with your AI readiness data
+        const finalFeatures: CountryFeature[] = mergedFeatures.map((feature: CountryFeature) => {
+          const geoJsonName = feature.properties.name;
+          // Check for a mapped name first, otherwise use the original
+          const lookupName = COUNTRY_NAME_MAP[geoJsonName] || geoJsonName;
+          const readinessValue = readinessDataMap.get(lookupName);
 
-            return feature;
-          });
+          // Add the aiReadiness score to the feature's properties
+          // The score is scaled from 0-1 to 0-100 and fixed to an integer
+          feature.properties.aiReadiness = readinessValue ? Math.round(readinessValue * 100) : 0;
 
-        setCountries(mergedFeatures);
+          return feature;
+        });
+
+        setCountries(finalFeatures);
       } catch (error) {
         console.error("Error loading or merging country data:", error);
       }
