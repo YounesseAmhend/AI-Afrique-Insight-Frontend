@@ -1,17 +1,21 @@
-"use client"; // If this is an App Router page.tsx
+// In your pages/index.js or app/page.js
+"use client";
 
 import dynamic from 'next/dynamic';
 
-// Dynamically import the map component with no SSR
 const AIReadinessMapWithNoSSR = dynamic(
-  () => import('@/components/mapComponents/AIReadinessMap'), // Adjust path to your component
-  { ssr: false }
+  () => import('@/components/mapComponents/AIReadinessMap'), // Make sure this path is correct
+  { 
+    ssr: false,
+    // Optional: add a loading component
+    loading: () => <p>Loading Map...</p> 
+  }
 );
 
 export default function Home() {
   return (
-    <>
+    <main>
       <AIReadinessMapWithNoSSR />
-    </>
+    </main>
   );
 }
