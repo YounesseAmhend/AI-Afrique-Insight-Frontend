@@ -9,14 +9,9 @@ import type { Layer } from 'leaflet';
 const AIReadinessMap = () => {
   const [countries, setCountries] = useState<Feature<Geometry, GeoJsonProperties>[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<Feature<Geometry, GeoJsonProperties> | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const geoJsonRef = useRef(null);
   const mapRef = useRef(null);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   useEffect(() => {
     const fetchCountryData = async () => {
@@ -41,8 +36,7 @@ const AIReadinessMap = () => {
   const styleFeature = (feature?: Feature<Geometry, GeoJsonProperties>) => {
     const isSelected =
       selectedCountry &&
-      selectedCountry.properties?.name &&
-      feature?.properties?.name === selectedCountry.properties.name;
+      feature?.id === selectedCountry.id;
     return {
       fillColor: isSelected ? '#F59E0B' : '#3B82F6',
       weight: 1.5,
@@ -62,8 +56,6 @@ const AIReadinessMap = () => {
   const filteredCountries = countries.filter((country) =>
     country.properties?.name && country.properties.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  if (!isMounted) return null;
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-gray-50 to-gray-100 font-sans">
@@ -108,10 +100,10 @@ const AIReadinessMap = () => {
               <ul className="divide-y divide-blue-50">
                 {filteredCountries.map((country) => (
                   <li
-                    key={country.properties?.id ?? country.id ?? country.properties?.name}
+                    key={country.id ?? country.properties?.name}
                     onClick={() => handleCountryClick(country)}
                     className={`flex items-center p-3 cursor-pointer transition-all duration-200 rounded-lg mx-2 my-1 group
-                      ${selectedCountry?.properties?.id === country.properties?.id
+                      ${selectedCountry?.id === country.id
                         ? 'bg-blue-100 border-l-4 border-blue-600 scale-[1.02] shadow'
                         : 'hover:bg-blue-50 hover:scale-[1.01] border-l-4 border-transparent'}
                     `}
@@ -120,7 +112,7 @@ const AIReadinessMap = () => {
                       {country.properties?.name?.slice(0,2)?.toUpperCase() ?? '--'}
                     </div>
                     <span className={`font-medium text-base transition-colors duration-200
-                      ${selectedCountry?.properties?.id === country.properties?.id
+                      ${selectedCountry?.id === country.id
                         ? 'text-blue-900'
                         : 'text-gray-700 group-hover:text-blue-700'}
                     `}>
@@ -157,7 +149,7 @@ const AIReadinessMap = () => {
               {countries.length > 0 && (
                 <GeoJSON
                   ref={geoJsonRef}
-                  data={{ type: 'FeatureCollection', features: countries, properties: {} } as FeatureCollection<Geometry, GeoJsonProperties>}
+                  data={{ type: 'FeatureCollection', features: countries } as FeatureCollection<Geometry, GeoJsonProperties>}
                   style={styleFeature}
                   onEachFeature={onEachFeature}
                 />
