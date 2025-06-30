@@ -3,15 +3,32 @@
 import { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { Feature, GeoJsonProperties, Geometry, FeatureCollection } from 'geojson';
+import type { Feature, GeoJsonProperties, Geometry } from 'geojson';
 import type { Layer } from 'leaflet';
+import type { Map } from 'leaflet';
+
+// Define a custom properties type to include our new data
+interface CountryProperties extends GeoJsonProperties {
+  name: string;
+  aiReadiness?: number;
+  governmentInvestment?: number;
+  innovationScore?: number;
+  dataInfrastructure?: number;
+  humanCapital?: number;
+  aiStartups?: number;
+  ethicsRating?: 'A' | 'B' | 'C' | 'D';
+}
+
+// Use the custom properties in our Feature type
+type CountryFeature = Feature<Geometry, CountryProperties>;
+
 
 const AIReadinessMap = () => {
-  const [countries, setCountries] = useState<Feature<Geometry, GeoJsonProperties>[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<Feature<Geometry, GeoJsonProperties> | null>(null);
+  const [countries, setCountries] = useState<CountryFeature[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<CountryFeature | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const geoJsonRef = useRef(null);
-  const mapRef = useRef(null);
+  const geoJsonRef = useRef<any>(null);
+  const mapRef = useRef<Map>(null);
 
   useEffect(() => {
     const fetchCountryData = async () => {
@@ -19,8 +36,26 @@ const AIReadinessMap = () => {
         const response = await fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json');
         if (!response.ok) throw new Error('Failed to fetch country data');
         const data = await response.json();
-        const filteredFeatures = data.features.filter(f => f.properties.name !== "Antarctica");
-        setCountries(filteredFeatures);
+        
+        // Filter out Antarctica and add a random AI readiness score for demonstration
+        const featuresWithAIReadiness: CountryFeature[] = data.features
+          .filter((f: CountryFeature) => f.properties.name !== "Antarctica")
+          .map((feature: CountryFeature) => ({
+            ...feature,
+            properties: {
+              ...feature.properties,
+              // Simulate a range of AI-related data points
+              aiReadiness: Math.floor(Math.random() * 101),
+              governmentInvestment: Math.floor(Math.random() * 101),
+              innovationScore: Math.floor(Math.random() * 101),
+              dataInfrastructure: Math.floor(Math.random() * 101),
+              humanCapital: Math.floor(Math.random() * 101),
+              aiStartups: Math.floor(Math.random() * 491) + 10, // Random number between 10 and 500
+              ethicsRating: ['A', 'B', 'C', 'D'][Math.floor(Math.random() * 4)] as 'A' | 'B' | 'C' | 'D',
+            },
+          }));
+
+        setCountries(featuresWithAIReadiness);
       } catch (error) {
         console.error(error);
       }
@@ -29,11 +64,11 @@ const AIReadinessMap = () => {
     fetchCountryData();
   }, []);
 
-  const handleCountryClick = (country: Feature<Geometry, GeoJsonProperties>) => {
+  const handleCountryClick = (country: CountryFeature) => {
     setSelectedCountry(country);
   };
 
-  const styleFeature = (feature?: Feature<Geometry, GeoJsonProperties>) => {
+  const styleFeature = (feature?: CountryFeature) => {
     const isSelected =
       selectedCountry &&
       feature?.id === selectedCountry.id;
@@ -46,7 +81,7 @@ const AIReadinessMap = () => {
     };
   };
 
-  const onEachFeature = (feature: Feature<Geometry, GeoJsonProperties>, layer: Layer) => {
+  const onEachFeature = (feature: CountryFeature, layer: Layer) => {
     layer.on({
       click: () => setSelectedCountry(feature),
     });
@@ -78,7 +113,7 @@ const AIReadinessMap = () => {
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar */}
-        <div className="w-80 bg-white border-r border-blue-100 flex flex-col">
+        <div className="w-96 bg-white border-r border-blue-100 flex flex-col">
           <div className="p-5 border-b border-blue-100">
             <h2 className="text-xl font-bold text-blue-800 mb-4">Countries</h2>
             <div className="relative">
@@ -102,22 +137,27 @@ const AIReadinessMap = () => {
                   <li
                     key={country.id ?? country.properties?.name}
                     onClick={() => handleCountryClick(country)}
-                    className={`flex items-center p-3 cursor-pointer transition-all duration-200 rounded-lg mx-2 my-1 group
+                    className={`flex items-center justify-between p-4 cursor-pointer transition-all duration-200 rounded-lg mx-2 my-1 group
                       ${selectedCountry?.id === country.id
-                        ? 'bg-blue-100 border-l-4 border-blue-600 scale-[1.02] shadow'
-                        : 'hover:bg-blue-50 hover:scale-[1.01] border-l-4 border-transparent'}
+                        ? 'bg-blue-100 border-l-4 border-blue-600 shadow'
+                        : 'hover:bg-blue-50 border-l-4 border-transparent'}
                     `}
                   >
-                    <div className="bg-gray-200 border-2 border-dashed rounded-xl w-8 h-8 mr-3 flex items-center justify-center text-gray-500 font-bold text-lg">
-                      {country.properties?.name?.slice(0,2)?.toUpperCase() ?? '--'}
-                    </div>
-                    <span className={`font-medium text-base transition-colors duration-200
+                    <span className={`font-medium text-base truncate pr-4 transition-colors duration-200
                       ${selectedCountry?.id === country.id
                         ? 'text-blue-900'
                         : 'text-gray-700 group-hover:text-blue-700'}
                     `}>
                       {country.properties?.name ?? 'Unknown'}
                     </span>
+                    
+                    {/* AI Readiness Meter */}
+                    <div className="flex items-center flex-shrink-0 w-[120px]">
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full" style={{ width: `${country.properties.aiReadiness}%` }}></div>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-600 ml-2 w-8 text-right">{country.properties.aiReadiness}</span>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -149,7 +189,7 @@ const AIReadinessMap = () => {
               {countries.length > 0 && (
                 <GeoJSON
                   ref={geoJsonRef}
-                  data={{ type: 'FeatureCollection', features: countries } as FeatureCollection<Geometry, GeoJsonProperties>}
+                  data={{ type: 'FeatureCollection', features: countries }}
                   style={styleFeature}
                   onEachFeature={onEachFeature}
                 />
@@ -174,83 +214,70 @@ const AIReadinessMap = () => {
         {/* Right Sidebar */}
         <div className="w-96 bg-white border-l border-blue-100 flex flex-col">
           <div className="p-6 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-white">
-            <h2 className="text-2xl font-extrabold text-blue-900">Country Details</h2>
-            <p className="text-sm text-blue-500 mt-1">AI readiness metrics and insights</p>
+            <h2 className="text-2xl font-extrabold text-blue-900">AI Readiness Analysis</h2>
+            <p className="text-sm text-blue-500 mt-1">Metrics and data points</p>
           </div>
           
           <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
             {selectedCountry ? (
-              <div className="space-y-7 animate-fade-in">
-                <div className="flex items-start space-x-5">
-                  <div className="bg-gray-200 border-2 border-dashed rounded-2xl w-16 h-16 flex-shrink-0 flex items-center justify-center text-gray-500 text-2xl font-bold">
+              <div className="space-y-6 animate-fade-in">
+                {/* Country Header */}
+                <div className="flex items-center space-x-4">
+                  <div className="bg-gray-200 border-2 border-dashed rounded-2xl w-14 h-14 flex-shrink-0 flex items-center justify-center text-gray-500 text-2xl font-bold">
                     {selectedCountry.properties?.name?.slice(0,2)?.toUpperCase() ?? '--'}
                   </div>
                   <div>
                     <h3 className="text-2xl font-extrabold text-blue-900">{selectedCountry.properties?.name ?? 'Unknown'}</h3>
-                    <div className="flex items-center mt-2">
-                      <span className="bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded shadow-sm">Tier 1: Highly Prepared</span>
-                    </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-5 pt-4">
-                  <div className="bg-blue-50 p-4 rounded-xl shadow-sm">
-                    <p className="text-sm text-blue-700 font-semibold">Infrastructure Score</p>
-                    <p className="text-2xl font-extrabold mt-1 text-blue-900">84/100</p>
-                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                      <div className="bg-gradient-to-r from-blue-500 to-blue-700 h-2 rounded-full transition-all duration-700" style={{ width: '84%' }}></div>
+
+                {/* Overall Score */}
+                <div className="bg-blue-50 p-5 rounded-xl shadow-sm text-center">
+                    <p className="text-base text-blue-700 font-semibold">Overall AI Readiness Score</p>
+                    <p className="text-5xl font-extrabold mt-2 text-blue-900">{selectedCountry.properties.aiReadiness ?? 'N/A'}<span className="text-3xl text-blue-400">/100</span></p>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-4">
+                        <div className="bg-gradient-to-r from-blue-500 to-blue-700 h-2.5 rounded-full transition-all duration-700" style={{ width: `${selectedCountry.properties.aiReadiness}%` }}></div>
                     </div>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-xl shadow-sm">
-                    <p className="text-sm text-purple-700 font-semibold">Talent Pool</p>
-                    <p className="text-2xl font-extrabold mt-1 text-purple-900">76/100</p>
-                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                      <div className="bg-gradient-to-r from-purple-400 to-purple-700 h-2 rounded-full transition-all duration-700" style={{ width: '76%' }}></div>
-                    </div>
-                  </div>
-                  <div className="bg-amber-50 p-4 rounded-xl shadow-sm">
-                    <p className="text-sm text-amber-700 font-semibold">Policy Support</p>
-                    <p className="text-2xl font-extrabold mt-1 text-amber-900">92/100</p>
-                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                      <div className="bg-gradient-to-r from-amber-400 to-amber-600 h-2 rounded-full transition-all duration-700" style={{ width: '92%' }}></div>
-                    </div>
-                  </div>
-                  <div className="bg-emerald-50 p-4 rounded-xl shadow-sm">
-                    <p className="text-sm text-emerald-700 font-semibold">Adoption Rate</p>
-                    <p className="text-2xl font-extrabold mt-1 text-emerald-900">68/100</p>
-                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                      <div className="bg-gradient-to-r from-emerald-400 to-emerald-600 h-2 rounded-full transition-all duration-700" style={{ width: '68%' }}></div>
-                    </div>
-                  </div>
                 </div>
-                <div className="pt-2">
-                  <h4 className="font-bold text-blue-800 mb-3">Key Insights</h4>
-                  <ul className="space-y-3 text-base text-gray-700">
-                    <li className="flex items-start">
-                      <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"></path>
-                      </svg>
-                      <span>Strong government investment in AI research</span>
-                    </li>
-                    <li className="flex items-start">
-                      <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"></path>
-                      </svg>
-                      <span>World-class technical universities</span>
-                    </li>
-                    <li className="flex items-start">
-                      <svg className="w-5 h-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                      </svg>
-                      <span>Moderate industry adoption in manufacturing</span>
-                    </li>
-                    <li className="flex items-start">
-                      <svg className="w-5 h-5 text-red-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"></path>
-                      </svg>
-                      <span>Data privacy regulations limiting commercial applications</span>
-                    </li>
-                  </ul>
+
+                {/* Core Pillars */}
+                <div>
+                    <h4 className="font-bold text-blue-800 mb-3">Core Pillars</h4>
+                    <div className="space-y-3">
+                        {[
+                            { label: 'Gov. Investment', value: selectedCountry.properties.governmentInvestment, color: 'from-sky-400 to-sky-600' },
+                            { label: 'Innovation', value: selectedCountry.properties.innovationScore, color: 'from-purple-400 to-purple-600' },
+                            { label: 'Data Infrastructure', value: selectedCountry.properties.dataInfrastructure, color: 'from-emerald-400 to-emerald-600' },
+                            { label: 'Human Capital', value: selectedCountry.properties.humanCapital, color: 'from-amber-400 to-amber-600' },
+                        ].map(pillar => (
+                            <div key={pillar.label}>
+                                <div className="flex justify-between items-center mb-1">
+                                    <p className="text-sm font-semibold text-gray-600">{pillar.label}</p>
+                                    <p className="text-sm font-bold text-gray-800">{pillar.value}/100</p>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div className={`bg-gradient-to-r ${pillar.color} h-2 rounded-full`} style={{ width: `${pillar.value}%` }}></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
+
+                {/* Additional Stats */}
+                 <div>
+                    <h4 className="font-bold text-blue-800 mb-3">Additional Stats</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-gray-50 p-4 rounded-xl shadow-sm text-center">
+                           <p className="text-sm text-gray-500 font-semibold">AI Startups</p>
+                           <p className="text-2xl font-extrabold mt-1 text-gray-800">{selectedCountry.properties.aiStartups}</p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-xl shadow-sm text-center">
+                           <p className="text-sm text-gray-500 font-semibold">Ethics & Gov. Rating</p>
+                           <p className="text-2xl font-extrabold mt-1 text-gray-800">{selectedCountry.properties.ethicsRating}</p>
+                        </div>
+                    </div>
+                </div>
+
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center p-6 animate-fade-in">
@@ -259,7 +286,7 @@ const AIReadinessMap = () => {
                 </svg>
                 <h3 className="text-lg font-semibold text-blue-700 mb-1">No Country Selected</h3>
                 <p className="text-blue-400 max-w-xs">
-                  Select a country from the list to view AI readiness metrics and insights
+                  Select a country from the list to view its AI readiness data.
                 </p>
               </div>
             )}
