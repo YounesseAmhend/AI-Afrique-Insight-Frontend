@@ -122,7 +122,7 @@ const AIReadinessMap = () => {
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-gray-50 to-gray-100 font-sans">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-gradient-to-r from-white via-blue-50 to-white shadow-lg py-5 px-8 border-b border-blue-100">
+      {/* <header className="sticky top-0 z-50 bg-gradient-to-r from-white via-blue-50 to-white shadow-lg py-5 px-8 border-b border-blue-100">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <h1 className="text-3xl font-extrabold text-blue-900 tracking-tight flex items-center gap-3">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -135,7 +135,7 @@ const AIReadinessMap = () => {
             <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl shadow transition-all font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400">Download Report</button>
           </div>
         </div>
-      </header>
+      </header> */}
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">

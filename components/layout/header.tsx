@@ -25,7 +25,7 @@ export default function Header() {
         { name: "Admin", href: "/admin" },
 
         { name: "Map", href: "/map" },
-        { name: "About", href: "/about" },
+        // { name: "About", href: "/about" },
     ];
 
     const handleDownload = async () => {
