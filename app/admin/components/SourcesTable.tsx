@@ -1,11 +1,15 @@
 "use client";
 import Link from "@/components/link";
-import { useGetSources, useDeleteSource, useUpdateSourceUrl } from "@/hooks/useSourceQuery";
-import { ArrowUpRight, Check, Loader2, X, Edit, Trash } from "lucide-react";
-import { StatusBadge } from "./StatusBadge";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+    useDeleteSource,
+    useGetSources,
+    useUpdateSourceUrl,
+} from "@/hooks/useSourceQuery";
+import { ArrowUpRight, Check, Edit, Loader2, Trash, X } from "lucide-react";
+import { useState } from "react";
+import { StatusBadge } from "./StatusBadge";
 
 function formatDate(dateString?: string | null) {
     if (!dateString) return "-";
@@ -28,6 +32,9 @@ export function SourcesTable() {
     const updateSourceUrlMutation = useUpdateSourceUrl();
     const [editingSourceId, setEditingSourceId] = useState<number | null>(null);
     const [newUrl, setNewUrl] = useState("");
+    const [newContainsAiContent, setNewContainsAiContent] = useState(false);
+    const [newContainsAfricaContent, setNewContainsAfricaContent] =
+        useState(false);
 
     const handleDelete = async (id: number) => {
         try {
@@ -39,9 +46,16 @@ export function SourcesTable() {
 
     const handleUpdateUrl = async (id: number) => {
         try {
-            await updateSourceUrlMutation.mutateAsync({ id, newUrl });
+            await updateSourceUrlMutation.mutateAsync({
+                id,
+                url: newUrl,
+                containsAiContent: newContainsAiContent,
+                containsAfricaContent: newContainsAfricaContent,
+            });
             setEditingSourceId(null);
             setNewUrl("");
+            setNewContainsAiContent(false);
+            setNewContainsAfricaContent(false);
         } catch (error) {
             console.error("Failed to update source URL:", error);
         }
@@ -99,18 +113,61 @@ export function SourcesTable() {
                         </tr>
                     ) : sources && sources.length > 0 ? (
                         sources.map((source) => (
-                            <tr key={source.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <tr
+                                key={source.id}
+                                className='hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors'
+                            >
                                 <td className='px-6 py-4 max-w-[260px]'>
                                     {editingSourceId === source.id ? (
-                                        <div className="flex gap-2">
+                                        <div className='flex flex-col gap-2'>
                                             <Input
                                                 value={newUrl}
-                                                onChange={(e) => setNewUrl(e.target.value)}
-                                                placeholder="Enter new URL"
+                                                onChange={(e) =>
+                                                    setNewUrl(e.target.value)
+                                                }
+                                                placeholder='Enter new URL'
                                             />
+                                            <div className='flex gap-4'>
+                                                <label className='flex items-center gap-2'>
+                                                    <input
+                                                        type='checkbox'
+                                                        checked={
+                                                            newContainsAiContent
+                                                        }
+                                                        onChange={(e) =>
+                                                            setNewContainsAiContent(
+                                                                e.target
+                                                                    .checked,
+                                                            )
+                                                        }
+                                                    />
+                                                    <span>
+                                                        Contains AI Content
+                                                    </span>
+                                                </label>
+                                                <label className='flex items-center gap-2'>
+                                                    <input
+                                                        type='checkbox'
+                                                        checked={
+                                                            newContainsAfricaContent
+                                                        }
+                                                        onChange={(e) =>
+                                                            setNewContainsAfricaContent(
+                                                                e.target
+                                                                    .checked,
+                                                            )
+                                                        }
+                                                    />
+                                                    <span>
+                                                        Contains Africa Content
+                                                    </span>
+                                                </label>
+                                            </div>
                                             <Button
-                                                size="sm"
-                                                onClick={() => handleUpdateUrl(source.id)}
+                                                size='sm'
+                                                onClick={() =>
+                                                    handleUpdateUrl(source.id)
+                                                }
                                             >
                                                 Save
                                             </Button>
@@ -137,14 +194,14 @@ export function SourcesTable() {
                                     )}
                                 </td>
                                 <td className='px-6 py-4 text-center'>
-                                    {source.triggerAi ? (
+                                    {!source.triggerAi ? (
                                         <Check className='w-5 h-5 text-green-600' />
                                     ) : (
                                         <X className='w-5 h-5 text-red-600' />
                                     )}
                                 </td>
                                 <td className='px-6 py-4 flex justify-center text-center items-center'>
-                                    {source.triggerAfrica ? (
+                                    {!source.triggerAfrica ? (
                                         <Check className='w-5 h-5 text-green-600' />
                                     ) : (
                                         <X className='w-5 h-5 text-red-600' />
@@ -160,23 +217,31 @@ export function SourcesTable() {
                                     {formatDate(source.updatedAt)}
                                 </td>
                                 <td className='px-6 py-4 text-center'>
-                                    <div className="flex gap-2 justify-center">
+                                    <div className='flex gap-2 justify-center'>
                                         <Button
-                                            variant="ghost"
-                                            size="sm"
+                                            variant='ghost'
+                                            size='sm'
                                             onClick={() => {
                                                 setEditingSourceId(source.id);
                                                 setNewUrl(source.url);
+                                                setNewContainsAiContent(
+                                                    !source.triggerAi,
+                                                );
+                                                setNewContainsAfricaContent(
+                                                    !source.triggerAfrica,
+                                                );
                                             }}
                                         >
-                                            <Edit className="w-4 h-4" />
+                                            <Edit className='w-4 h-4' />
                                         </Button>
                                         <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleDelete(source.id)}
+                                            variant='ghost'
+                                            size='sm'
+                                            onClick={() =>
+                                                handleDelete(source.id)
+                                            }
                                         >
-                                            <Trash className="w-4 h-4 text-red-600" />
+                                            <Trash className='w-4 h-4 text-red-600' />
                                         </Button>
                                     </div>
                                 </td>
