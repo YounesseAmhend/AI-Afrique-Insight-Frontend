@@ -32,6 +32,13 @@ interface CountryProperties extends GeoJsonProperties {
 // Use the custom properties in our Feature type
 type CountryFeature = Feature<Geometry, CountryProperties>;
 
+// Define the items for our legend, ordered from low to high score.
+const legendColorItems = [
+    { score: '1-40', color: '#a1d99b' },
+    { score: '41-60', color: '#74c476' },
+    { score: '61-70', color: '#41ab5d' },
+    { score: '71+', color: '#238b45' },
+];
 
 const AIReadinessMap = () => {
   const [countries, setCountries] = useState<CountryFeature[]>([]);
@@ -121,22 +128,7 @@ const AIReadinessMap = () => {
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-gray-50 to-gray-100 font-sans">
-      {/* Header */}
-      {/* <header className="sticky top-0 z-50 bg-gradient-to-r from-white via-blue-50 to-white shadow-lg py-5 px-8 border-b border-blue-100">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <h1 className="text-3xl font-extrabold text-blue-900 tracking-tight flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Global AI Readiness Index
-          </h1>
-          <div className="flex items-center space-x-4">
-            <div className="bg-blue-100 text-blue-800 px-4 py-1 rounded-full text-base font-semibold shadow-sm">Beta</div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl shadow transition-all font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400">Download Report</button>
-          </div>
-        </div>
-      </header> */}
-
+      
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar */}
@@ -202,9 +194,9 @@ const AIReadinessMap = () => {
           </div>
         </div>
 
-        {/* Map Container */}
-        <div className="flex-1 relative flex items-center justify-center bg-gradient-to-br from-blue-50 to-white z-0">
-          <div className="w-[98%] h-[96%] rounded-3xl shadow-2xl border border-blue-100 overflow-hidden relative z-0">
+        {/* Map Container with Legend */}
+        <div className="flex-1 relative flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-white z-0">
+          <div className="w-[98%] flex-1 rounded-3xl shadow-2xl border border-blue-100 overflow-hidden relative z-0 mb-4">
             <MapContainer 
               ref={mapRef}
               center={[20, 0]} 
@@ -237,6 +229,46 @@ const AIReadinessMap = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4"></path>
                 </svg>
               </button>
+            </div>
+          </div>
+
+          {/* AI Readiness Score Legend - Now positioned under the map */}
+          <div className="w-[98%] bg-white p-4 shadow-lg border border-blue-100 rounded-2xl mb-4">
+            <div className="max-w-2xl mx-auto">
+              <div className="text-center mb-3">
+                <h3 className="text-lg font-bold text-blue-900 mb-1">AI Readiness Score Scale</h3>
+                <p className="text-sm text-blue-600">Color coding represents the readiness level of each country</p>
+              </div>
+              
+              <div className="flex justify-between text-xs text-gray-500 mb-2">
+                <span className="font-medium">Low Readiness</span>
+                <span className="text-center font-medium">Medium Readiness</span>
+                <span className="text-right font-medium">High Readiness</span>
+              </div>
+              
+              <div className="flex h-6 rounded-full overflow-hidden border-2 border-gray-200 shadow-inner mb-2">
+                {legendColorItems.map((item) => (
+                  <div key={item.score} style={{ backgroundColor: item.color }} className="w-1/4 transition-all duration-300 hover:brightness-110"></div>
+                ))}
+              </div>
+              
+              <div className="flex justify-between text-sm text-gray-700 font-semibold mb-3">
+                <span>0</span>
+                <span>40</span>
+                <span>60</span>
+                <span className="text-right">70+</span>
+              </div>
+              
+              <div className="flex items-center justify-center gap-6">
+                <div className="flex items-center">
+                  <div className="w-4 h-4 rounded-full mr-2 border-2 border-gray-300" style={{backgroundColor: '#d1d5db'}}></div>
+                  <span className="text-sm text-gray-600 font-medium">No Data Available</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-4 h-4 rounded-full mr-2 border-2 border-amber-400" style={{backgroundColor: '#F59E0B'}}></div>
+                  <span className="text-sm text-gray-600 font-medium">Selected Country</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
