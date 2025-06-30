@@ -4,19 +4,29 @@ import { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Feature, GeoJsonProperties, Geometry } from 'geojson';
-import type { Layer } from 'leaflet';
-import type { Map } from 'leaflet';
+import type { Layer, Map } from 'leaflet';
+
+// Import the AI readiness data from your local file
+import { aiReadinessDataArray } from '@/data/aiReadinessData';
+
+// Define a mapping for country names that may differ between data sources
+const COUNTRY_NAME_MAP: { [key: string]: string } = {
+  "United States of America": "United States",
+  "Russian Federation": "Russian Federation",
+  "Dem. Rep. Congo": "Congo, Dem. Rep. of the",
+  "Congo": "Congo, Republic of",
+  "Republic of Korea": "Korea, Republic of",
+  "Hong Kong S.A.R.": "Hong Kong SAR",
+  "Macao S.A.R": "Macao SAR",
+  "Republic of Turkey": "Türkiye, Republic of",
+  "Czechia": "Czech Republic"
+};
+
 
 // Define a custom properties type to include our new data
 interface CountryProperties extends GeoJsonProperties {
   name: string;
-  aiReadiness?: number;
-  governmentInvestment?: number;
-  innovationScore?: number;
-  dataInfrastructure?: number;
-  humanCapital?: number;
-  aiStartups?: number;
-  ethicsRating?: 'A' | 'B' | 'C' | 'D';
+  aiReadiness?: number; // Score from 0-100
 }
 
 // Use the custom properties in our Feature type
@@ -31,37 +41,41 @@ const AIReadinessMap = () => {
   const mapRef = useRef<Map>(null);
 
   useEffect(() => {
-    const fetchCountryData = async () => {
+    const fetchAndMergeData = async () => {
       try {
+        // 1. Create a lookup map from your local AI readiness data
+        const readinessDataMap = new Map(
+          aiReadinessDataArray.map(data => [data.name, data.value])
+        );
+
+        // 2. Fetch the GeoJSON for map shapes
         const response = await fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json');
         if (!response.ok) throw new Error('Failed to fetch country data');
-        const data = await response.json();
+        const geoJsonData = await response.json();
         
-        // Filter out Antarctica and add a random AI readiness score for demonstration
-        const featuresWithAIReadiness: CountryFeature[] = data.features
+        // 3. Merge the GeoJSON data with your AI readiness data
+        const mergedFeatures: CountryFeature[] = geoJsonData.features
           .filter((f: CountryFeature) => f.properties.name !== "Antarctica")
-          .map((feature: CountryFeature) => ({
-            ...feature,
-            properties: {
-              ...feature.properties,
-              // Simulate a range of AI-related data points
-              aiReadiness: Math.floor(Math.random() * 101),
-              governmentInvestment: Math.floor(Math.random() * 101),
-              innovationScore: Math.floor(Math.random() * 101),
-              dataInfrastructure: Math.floor(Math.random() * 101),
-              humanCapital: Math.floor(Math.random() * 101),
-              aiStartups: Math.floor(Math.random() * 491) + 10, // Random number between 10 and 500
-              ethicsRating: ['A', 'B', 'C', 'D'][Math.floor(Math.random() * 4)] as 'A' | 'B' | 'C' | 'D',
-            },
-          }));
+          .map((feature: CountryFeature) => {
+            const geoJsonName = feature.properties.name;
+            // Check for a mapped name first, otherwise use the original
+            const lookupName = COUNTRY_NAME_MAP[geoJsonName] || geoJsonName;
+            const readinessValue = readinessDataMap.get(lookupName);
 
-        setCountries(featuresWithAIReadiness);
+            // Add the aiReadiness score to the feature's properties
+            // The score is scaled from 0-1 to 0-100 and fixed to an integer
+            feature.properties.aiReadiness = readinessValue ? Math.round(readinessValue * 100) : 0;
+
+            return feature;
+          });
+
+        setCountries(mergedFeatures);
       } catch (error) {
-        console.error(error);
+        console.error("Error loading or merging country data:", error);
       }
     };
 
-    fetchCountryData();
+    fetchAndMergeData();
   }, []);
 
   const handleCountryClick = (country: CountryFeature) => {
@@ -72,12 +86,21 @@ const AIReadinessMap = () => {
     const isSelected =
       selectedCountry &&
       feature?.id === selectedCountry.id;
+    
+    // Dynamically color countries based on their readiness score
+    const score = feature?.properties?.aiReadiness ?? 0;
+    let fillColor = '#d1d5db'; // Default gray for countries with no data
+    if (score > 0) fillColor = '#a1d99b';
+    if (score > 40) fillColor = '#74c476';
+    if (score > 60) fillColor = '#41ab5d';
+    if (score > 70) fillColor = '#238b45';
+
     return {
-      fillColor: isSelected ? '#F59E0B' : '#3B82F6',
+      fillColor: isSelected ? '#F59E0B' : fillColor,
       weight: 1.5,
       opacity: 1,
       color: 'white',
-      fillOpacity: isSelected ? 0.8 : 0.6,
+      fillOpacity: isSelected ? 0.9 : 0.7,
     };
   };
 
@@ -88,9 +111,13 @@ const AIReadinessMap = () => {
   };
 
   // Filter countries based on search term
-  const filteredCountries = countries.filter((country) =>
-    country.properties?.name && country.properties.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCountries = countries
+    .filter(c => c.properties.aiReadiness && c.properties.aiReadiness > 0) // Only show countries with data in the list
+    .filter((country) =>
+      country.properties?.name && country.properties.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a,b) => (b.properties.aiReadiness ?? 0) - (a.properties.aiReadiness ?? 0)); // Sort by score descending
+
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-gray-50 to-gray-100 font-sans">
@@ -115,7 +142,7 @@ const AIReadinessMap = () => {
         {/* Left Sidebar */}
         <div className="w-96 bg-white border-r border-blue-100 flex flex-col">
           <div className="p-5 border-b border-blue-100">
-            <h2 className="text-xl font-bold text-blue-800 mb-4">Countries</h2>
+            <h2 className="text-xl font-bold text-blue-800 mb-4">Country Rankings</h2>
             <div className="relative">
               <input
                 type="text"
@@ -133,7 +160,7 @@ const AIReadinessMap = () => {
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {filteredCountries.length > 0 ? (
               <ul className="divide-y divide-blue-50">
-                {filteredCountries.map((country) => (
+                {filteredCountries.map((country, index) => (
                   <li
                     key={country.id ?? country.properties?.name}
                     onClick={() => handleCountryClick(country)}
@@ -143,18 +170,21 @@ const AIReadinessMap = () => {
                         : 'hover:bg-blue-50 border-l-4 border-transparent'}
                     `}
                   >
-                    <span className={`font-medium text-base truncate pr-4 transition-colors duration-200
-                      ${selectedCountry?.id === country.id
-                        ? 'text-blue-900'
-                        : 'text-gray-700 group-hover:text-blue-700'}
-                    `}>
-                      {country.properties?.name ?? 'Unknown'}
-                    </span>
+                    <div className="flex items-center">
+                        <span className="font-bold text-gray-400 w-8">{index + 1}</span>
+                        <span className={`font-medium text-base truncate pr-4 transition-colors duration-200
+                        ${selectedCountry?.id === country.id
+                            ? 'text-blue-900'
+                            : 'text-gray-700 group-hover:text-blue-700'}
+                        `}>
+                        {country.properties?.name ?? 'Unknown'}
+                        </span>
+                    </div>
                     
                     {/* AI Readiness Meter */}
                     <div className="flex items-center flex-shrink-0 w-[120px]">
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full" style={{ width: `${country.properties.aiReadiness}%` }}></div>
+                        <div className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full" style={{ width: `${country.properties.aiReadiness}%` }}></div>
                         </div>
                         <span className="text-sm font-semibold text-gray-600 ml-2 w-8 text-right">{country.properties.aiReadiness}</span>
                     </div>
@@ -232,50 +262,16 @@ const AIReadinessMap = () => {
                 </div>
 
                 {/* Overall Score */}
-                <div className="bg-blue-50 p-5 rounded-xl shadow-sm text-center">
-                    <p className="text-base text-blue-700 font-semibold">Overall AI Readiness Score</p>
-                    <p className="text-5xl font-extrabold mt-2 text-blue-900">{selectedCountry.properties.aiReadiness ?? 'N/A'}<span className="text-3xl text-blue-400">/100</span></p>
+                <div className="bg-green-50 p-5 rounded-xl shadow-sm text-center">
+                    <p className="text-base text-green-700 font-semibold">Overall AI Readiness Score</p>
+                    <p className="text-5xl font-extrabold mt-2 text-green-900">{selectedCountry.properties.aiReadiness ?? 'N/A'}<span className="text-3xl text-green-400">/100</span></p>
                     <div className="w-full bg-gray-200 rounded-full h-2.5 mt-4">
-                        <div className="bg-gradient-to-r from-blue-500 to-blue-700 h-2.5 rounded-full transition-all duration-700" style={{ width: `${selectedCountry.properties.aiReadiness}%` }}></div>
+                        <div className="bg-gradient-to-r from-green-500 to-green-700 h-2.5 rounded-full transition-all duration-700" style={{ width: `${selectedCountry.properties.aiReadiness}%` }}></div>
                     </div>
                 </div>
-
-                {/* Core Pillars */}
-                <div>
-                    <h4 className="font-bold text-blue-800 mb-3">Core Pillars</h4>
-                    <div className="space-y-3">
-                        {[
-                            { label: 'Gov. Investment', value: selectedCountry.properties.governmentInvestment, color: 'from-sky-400 to-sky-600' },
-                            { label: 'Innovation', value: selectedCountry.properties.innovationScore, color: 'from-purple-400 to-purple-600' },
-                            { label: 'Data Infrastructure', value: selectedCountry.properties.dataInfrastructure, color: 'from-emerald-400 to-emerald-600' },
-                            { label: 'Human Capital', value: selectedCountry.properties.humanCapital, color: 'from-amber-400 to-amber-600' },
-                        ].map(pillar => (
-                            <div key={pillar.label}>
-                                <div className="flex justify-between items-center mb-1">
-                                    <p className="text-sm font-semibold text-gray-600">{pillar.label}</p>
-                                    <p className="text-sm font-bold text-gray-800">{pillar.value}/100</p>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                    <div className={`bg-gradient-to-r ${pillar.color} h-2 rounded-full`} style={{ width: `${pillar.value}%` }}></div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Additional Stats */}
-                 <div>
-                    <h4 className="font-bold text-blue-800 mb-3">Additional Stats</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-gray-50 p-4 rounded-xl shadow-sm text-center">
-                           <p className="text-sm text-gray-500 font-semibold">AI Startups</p>
-                           <p className="text-2xl font-extrabold mt-1 text-gray-800">{selectedCountry.properties.aiStartups}</p>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-xl shadow-sm text-center">
-                           <p className="text-sm text-gray-500 font-semibold">Ethics & Gov. Rating</p>
-                           <p className="text-2xl font-extrabold mt-1 text-gray-800">{selectedCountry.properties.ethicsRating}</p>
-                        </div>
-                    </div>
+                
+                <div className="pt-4 text-gray-600 text-center">
+                    <p>Select another country to see its detailed AI readiness score.</p>
                 </div>
 
               </div>
@@ -286,7 +282,7 @@ const AIReadinessMap = () => {
                 </svg>
                 <h3 className="text-lg font-semibold text-blue-700 mb-1">No Country Selected</h3>
                 <p className="text-blue-400 max-w-xs">
-                  Select a country from the list to view its AI readiness data.
+                  Select a country from the list or on the map to view its AI readiness data.
                 </p>
               </div>
             )}
