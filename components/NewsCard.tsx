@@ -6,6 +6,7 @@ import { CategoryResponseDto } from "@/types/categoryType"
 import { getCategoryColor } from "@/lib/categoryColors"
 import { NewsResponseDto } from "@/types/newsType"
 
+
 type NewsCardProps = {
   description: string
   image: string
@@ -29,9 +30,9 @@ export default function NewsCard({
   size = "medium" 
 }: NewsCardProps) {
   const imageHeight = {
-    small: "h-[120px]",
-    medium: "h-[180px]",
-    large: "h-[240px]",
+    small: "h-[30px]",
+    medium: "h-[30px]",
+    large: "h-[30px]",
   }
 
   const titleSize = {
@@ -48,13 +49,24 @@ export default function NewsCard({
 
   return (
     <Card className="overflow-hidden hover:shadow-md transition-all duration-300 group border border-gray-200 dark:border-gray-800 hover:border-primary/50 dark:hover:border-primary/50">
-      <Link href={url} className="block">
+      {/* <Link href={url} className="block">
         <div className={`relative ${imageHeight[size]} overflow-hidden`}>
           <img
             src={image || "/placeholder.svg"}
             alt={item.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+      </Link> */}
+      <Link href={url} className="block group">
+        <div
+          className={`relative ${imageHeight[size]} overflow-hidden transition-transform duration-500 group-hover:scale-105`}
+        >
+                {/* Light blue gradient applied here */}
+          <div className="absolute inset-0 bg-gradient-to-r from-sky-300 to-sky-500" />
+          
+          {/* This is the hover overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       </Link>
