@@ -6,22 +6,21 @@ import 'leaflet/dist/leaflet.css';
 import type { Feature, GeoJsonProperties, Geometry } from 'geojson';
 import type { Layer, Map } from 'leaflet';
 
-// Import the AI readiness data from your local file
 import { aiReadinessDataArray } from '@/data/aiReadinessData';
 
 // Define a mapping for country names that may differ between data sources
 const COUNTRY_NAME_MAP: { [key: string]: string } = {
   "United States of America": "United States",
-  "Russian Federation": "Russian Federation",
+  "Russian Federation": "Russia",
   "Dem. Rep. Congo": "Congo, Dem. Rep. of the",
   "Congo": "Congo, Republic of",
-  "Republic of Korea": "Korea, Republic of",
+  "Republic of Korea": "South Korea",
+  "Korea, Republic of": "South Korea",
   "Hong Kong S.A.R.": "Hong Kong SAR",
   "Macao S.A.R": "Macao SAR",
-  "Republic of Turkey": "Türkiye, Republic of",
+  "Republic of Turkey": "Turkey",
   "Czechia": "Czech Republic"
 };
-
 
 // Define a custom properties type to include our new data
 interface CountryProperties extends GeoJsonProperties {
@@ -32,24 +31,26 @@ interface CountryProperties extends GeoJsonProperties {
 // Use the custom properties in our Feature type
 type CountryFeature = Feature<Geometry, CountryProperties>;
 
-// Define the items for our legend, ordered from low to high score.
+// Define the items for our legend with uniform blue shades
 const legendColorItems = [
-    { score: '1-40', color: '#a1d99b' },
-    { score: '41-60', color: '#74c476' },
-    { score: '61-70', color: '#41ab5d' },
-    { score: '71+', color: '#238b45' },
+    { score: '1-40', color: '#bfdbfe', label: 'Emerging' },      // blue-200
+    { score: '41-60', color: '#93c5fd', label: 'Developing' },   // blue-300
+    { score: '61-70', color: '#60a5fa', label: 'Advanced' },     // blue-400
+    { score: '71+', color: '#3b82f6', label: 'Leading' },        // blue-500
 ];
 
 const AIReadinessMap = () => {
   const [countries, setCountries] = useState<CountryFeature[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<CountryFeature | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const geoJsonRef = useRef<any>(null);
   const mapRef = useRef<Map>(null);
 
   useEffect(() => {
     const fetchAndMergeData = async () => {
       try {
+        setIsLoading(true);
         // 1. Create a lookup map from your local AI readiness data
         const readinessDataMap = new Map(
           aiReadinessDataArray.map(data => [data.name, data.value])
@@ -86,9 +87,6 @@ const AIReadinessMap = () => {
           
           // If Western Sahara exists, merge its geometry with Morocco
           if (westernSaharaFeature && westernSaharaFeature.geometry) {
-            // Create a simplified unified polygon by combining bounding coordinates
-            // This approach removes internal boundaries by creating one continuous polygon
-            
             const getAllCoordinates = (geometry: any): number[][][] => {
               if (geometry.type === 'MultiPolygon') {
                 return geometry.coordinates.flat();
@@ -101,20 +99,6 @@ const AIReadinessMap = () => {
             const moroccoPolygons = getAllCoordinates(moroccoFeature.geometry);
             const westernSaharaPolygons = getAllCoordinates(westernSaharaFeature.geometry);
             
-            // Simple approach: find the largest polygon from each and merge outer rings
-            const findLargestPolygon = (polygons: number[][][]) => {
-              return polygons.reduce((largest, current) => {
-                const currentArea = current[0]?.length || 0;
-                const largestArea = largest[0]?.length || 0;
-                return currentArea > largestArea ? current : largest;
-              }, polygons[0]);
-            };
-            
-            const mainMoroccoPolygon = findLargestPolygon(moroccoPolygons);
-            const mainWesternSaharaPolygon = findLargestPolygon(westernSaharaPolygons);
-            
-            // Combine all polygons as separate polygons in a MultiPolygon
-            // but ensure they render as one unified territory
             const allPolygons = [...moroccoPolygons, ...westernSaharaPolygons];
             
             mergedGeometry = {
@@ -157,6 +141,8 @@ const AIReadinessMap = () => {
         setCountries(finalFeatures);
       } catch (error) {
         console.error("Error loading or merging country data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -174,20 +160,20 @@ const AIReadinessMap = () => {
     
     const isMorocco = feature?.properties?.name === "Morocco";
     
-    // Dynamically color countries based on their readiness score
+    // Dynamically color countries based on their readiness score using blue shades
     const score = feature?.properties?.aiReadiness ?? 0;
-    let fillColor = '#d1d5db'; // Default gray for countries with no data
-    if (score > 0) fillColor = '#a1d99b';
-    if (score > 40) fillColor = '#74c476';
-    if (score > 60) fillColor = '#41ab5d';
-    if (score > 70) fillColor = '#238b45';
+    let fillColor = '#f8fafc'; // Default light gray for countries with no data
+    if (score > 0) fillColor = '#bfdbfe';   // blue-200 - Emerging
+    if (score > 40) fillColor = '#93c5fd';  // blue-300 - Developing
+    if (score > 60) fillColor = '#60a5fa';  // blue-400 - Advanced
+    if (score > 70) fillColor = '#3b82f6';  // blue-500 - Leading
 
     return {
-      fillColor: isSelected ? '#F59E0B' : fillColor,
-      weight: isMorocco ? 0.5 : (isSelected ? 2 : 1), // Thinner borders for Morocco to minimize internal lines
-      opacity: isMorocco ? 0.3 : 1, // Lower opacity for Morocco borders
-      color: isMorocco ? fillColor : 'white', // Use fill color for Morocco borders to blend them
-      fillOpacity: isSelected ? 0.9 : 0.8,
+      fillColor: isSelected ? '#f97316' : fillColor,
+      weight: isMorocco ? 0.3 : (isSelected ? 3 : 0.5),
+      opacity: isMorocco ? 0.2 : (isSelected ? 1 : 0.4),
+      color: isSelected ? '#ea580c' : (isMorocco ? fillColor : '#64748b'),
+      fillOpacity: isSelected ? 0.95 : 0.85,
       lineCap: 'round',
       lineJoin: 'round'
     };
@@ -196,120 +182,154 @@ const AIReadinessMap = () => {
   const onEachFeature = (feature: CountryFeature, layer: Layer) => {
     layer.on({
       click: () => setSelectedCountry(feature),
+      mouseover: (e) => {
+        const layer = e.target;
+        if (selectedCountry?.id !== feature.id) {
+          layer.setStyle({
+            weight: 2,
+            opacity: 0.8,
+            fillOpacity: 0.9
+          });
+        }
+      },
+      mouseout: (e) => {
+        if (selectedCountry?.id !== feature.id) {
+          geoJsonRef.current?.resetStyle(e.target);
+        }
+      }
     });
   };
 
   // Filter countries based on search term
   const filteredCountries = countries
-    .filter(c => c.properties.aiReadiness && c.properties.aiReadiness > 0) // Only show countries with data in the list
+    .filter(c => c.properties.aiReadiness && c.properties.aiReadiness > 0)
     .filter((country) =>
       country.properties?.name && country.properties.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
-    .sort((a,b) => (b.properties.aiReadiness ?? 0) - (a.properties.aiReadiness ?? 0)); // Sort by score descending
+    .sort((a,b) => (b.properties.aiReadiness ?? 0) - (a.properties.aiReadiness ?? 0));
 
-
+  const getScoreCategory = (score: number) => {
+    if (score > 70) return { label: 'Leading', color: 'text-blue-700', bg: 'bg-blue-50' };
+    if (score > 60) return { label: 'Advanced', color: 'text-blue-600', bg: 'bg-blue-50' };
+    if (score > 40) return { label: 'Developing', color: 'text-blue-500', bg: 'bg-blue-50' };
+    return { label: 'Emerging', color: 'text-blue-400', bg: 'bg-blue-50' };
+  };
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-gray-50 to-gray-100 font-sans">
-
-
-    {/* Header */}
-      {/* <header className="sticky top-0 z-50 bg-gradient-to-r from-white via-blue-50 to-white shadow-lg py-5 px-8 border-b border-blue-100">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <h1 className="text-3xl font-extrabold text-blue-900 tracking-tight flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Global AI Readiness Index
-          </h1>
-          <div className="flex items-center space-x-4">
-            <div className="bg-blue-100 text-blue-800 px-4 py-1 rounded-full text-base font-semibold shadow-sm">Beta</div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl shadow transition-all font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400">Download Report</button>
+    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+            <p className="text-lg font-semibold text-slate-600">Loading AI Readiness Data...</p>
           </div>
         </div>
-      </header> */}
+      )}
 
-
-
-
-      
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar */}
-        <div className="w-96 bg-white border-r border-blue-100 flex flex-col">
-          <div className="p-5 border-b border-blue-100">
-            <h2 className="text-xl font-bold text-blue-800 mb-4">Country Rankings</h2>
+        <div className="w-96 bg-white/90 backdrop-blur-sm border-r border-slate-200/50 flex flex-col shadow-xl">
+          <div className="p-6 border-b border-slate-200/50 bg-gradient-to-r from-blue-50/50 to-indigo-50/50">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-800">Global Rankings</h2>
+                <p className="text-sm text-slate-500">{filteredCountries.length} countries ranked</p>
+              </div>
+            </div>
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search countries..."
-                className="w-full p-2.5 pl-11 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-base shadow-sm"
+                className="w-full p-3 pl-11 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm shadow-sm transition-all bg-white/80 backdrop-blur-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <svg className="w-5 h-5 absolute left-4 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              <svg className="w-5 h-5 absolute left-3.5 top-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="flex-1 overflow-y-auto">
             {filteredCountries.length > 0 ? (
-              <ul className="divide-y divide-blue-50">
-                {filteredCountries.map((country, index) => (
-                  <li
-                    key={country.id ?? country.properties?.name}
-                    onClick={() => handleCountryClick(country)}
-                    className={`flex items-center justify-between p-4 cursor-pointer transition-all duration-200 rounded-lg mx-2 my-1 group
-                      ${selectedCountry?.id === country.id
-                        ? 'bg-blue-100 border-l-4 border-blue-600 shadow'
-                        : 'hover:bg-blue-50 border-l-4 border-transparent'}
-                    `}
-                  >
-                    <div className="flex items-center">
-                        <span className="font-bold text-gray-400 w-8">{index + 1}</span>
-                        <span className={`font-medium text-base truncate pr-4 transition-colors duration-200
+              <div className="p-2 space-y-1">
+                {filteredCountries.map((country, index) => {
+                  const category = getScoreCategory(country.properties.aiReadiness ?? 0);
+                  return (
+                    <div
+                      key={country.id ?? country.properties?.name}
+                      onClick={() => handleCountryClick(country)}
+                      className={`flex items-center justify-between p-4 cursor-pointer transition-all duration-200 rounded-xl group hover:shadow-md
                         ${selectedCountry?.id === country.id
-                            ? 'text-blue-900'
-                            : 'text-gray-700 group-hover:text-blue-700'}
+                          ? 'bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 shadow-lg transform scale-[1.02]'
+                          : 'hover:bg-slate-50 border-2 border-transparent'}
+                      `}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold
+                          ${index < 3 ? 'bg-gradient-to-br from-yellow-400 to-amber-500 text-white' : 'bg-slate-100 text-slate-600'}
                         `}>
-                        {country.properties?.name ?? 'Unknown'}
-                        </span>
-                    </div>
-                    
-                    {/* AI Readiness Meter */}
-                    <div className="flex items-center flex-shrink-0 w-[120px]">
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full" style={{ width: `${country.properties.aiReadiness}%` }}></div>
+                          {index + 1}
                         </div>
-                        <span className="text-sm font-semibold text-gray-600 ml-2 w-8 text-right">{country.properties.aiReadiness}</span>
+                        <div>
+                          <div className="font-semibold text-slate-800 group-hover:text-slate-900">
+                            {country.properties?.name ?? 'Unknown'}
+                          </div>
+                          <div className={`text-xs px-2 py-1 rounded-full inline-block mt-1 ${category.bg} ${category.color}`}>
+                            {category.label}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3">
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-slate-800">{country.properties.aiReadiness}</div>
+                          <div className="text-xs text-slate-500">Score</div>
+                        </div>
+                        <div className="w-16 bg-slate-200 rounded-full h-2">
+                          <div 
+                            className="h-2 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 transition-all duration-700" 
+                            style={{ width: `${country.properties.aiReadiness}%` }}
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </li>
-                ))}
-              </ul>
+                  );
+                })}
+              </div>
             ) : (
-              <div className="p-6 text-center">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="mt-2 text-gray-500">No countries found</p>
+              <div className="p-8 text-center">
+                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p className="text-slate-500">No countries found</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Map Container with Legend */}
-        <div className="flex-1 relative flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-white z-0">
-          <div className="w-[98%] flex-1 rounded-3xl shadow-2xl border border-blue-100 overflow-hidden relative z-0 mb-4">
+        {/* Map Container */}
+        <div className="flex-1 relative flex flex-col">
+          <div className="flex-1 m-4 rounded-2xl shadow-2xl border border-slate-200/50 overflow-hidden relative bg-white z-0">
             <MapContainer 
               ref={mapRef}
               center={[20, 0]} 
               zoom={2} 
-              className="h-full w-full bg-blue-50 z-0"
+              className="h-full w-full"
               scrollWheelZoom={true}
+              style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}
             >
               <TileLayer
                 url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                attribution='&copy; OpenStreetMap contributors'
               />
               {countries.length > 0 && (
                 <GeoJSON
@@ -320,137 +340,278 @@ const AIReadinessMap = () => {
                 />
               )}
             </MapContainer>
-            {/* Map Controls */}
-            <div className="absolute top-5 right-5 bg-white rounded-xl shadow-lg p-2 flex flex-col gap-2 border border-blue-100">
-              <button className="p-2 hover:bg-blue-50 rounded-md transition-colors">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-              </button>
-              <button className="p-2 hover:bg-blue-50 rounded-md transition-colors">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4"></path>
-                </svg>
-              </button>
-            </div>
           </div>
 
-          {/* AI Readiness Score Legend - Now positioned under the map */}
-          <div className="w-[98%] bg-white p-4 shadow-lg border border-blue-100 rounded-2xl mb-4">
-            <div className="max-w-2xl mx-auto">
-              <div className="text-center mb-3">
-                <h3 className="text-lg font-bold text-blue-900 mb-1">AI Readiness Score Scale</h3>
-                <p className="text-sm text-blue-600">Color coding represents the readiness level of each country</p>
+          {/* Legend */}
+          <div className="m-4 mt-0 bg-white/90 backdrop-blur-sm p-6 shadow-xl border border-slate-200/50 rounded-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">AI Readiness Scale</h3>
+                <p className="text-sm text-slate-500">Click on any country to explore details</p>
               </div>
-              
-              <div className="flex justify-between text-xs text-gray-500 mb-2">
-                <span className="font-medium">Low Readiness</span>
-                <span className="text-center font-medium">Medium Readiness</span>
-                <span className="text-right font-medium">High Readiness</span>
-              </div>
-              
-              <div className="flex h-6 rounded-full overflow-hidden border-2 border-gray-200 shadow-inner mb-2">
-                {legendColorItems.map((item) => (
-                  <div key={item.score} style={{ backgroundColor: item.color }} className="w-1/4 transition-all duration-300 hover:brightness-110"></div>
-                ))}
-              </div>
-              
-              <div className="flex justify-between text-sm text-gray-700 font-semibold mb-3">
-                <span>0</span>
-                <span>40</span>
-                <span>60</span>
-                <span className="text-right">70+</span>
-              </div>
-              
-              <div className="flex items-center justify-center gap-6">
-                <div className="flex items-center">
-                  <div className="w-4 h-4 rounded-full mr-2 border-2 border-gray-300" style={{backgroundColor: '#d1d5db'}}></div>
-                  <span className="text-sm text-gray-600 font-medium">No Data Available</span>
+              <div className="flex items-center space-x-4 text-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 rounded-full bg-slate-200"></div>
+                  <span className="text-slate-600">No Data</span>
                 </div>
-                <div className="flex items-center">
-                  <div className="w-4 h-4 rounded-full mr-2 border-2 border-amber-400" style={{backgroundColor: '#F59E0B'}}></div>
-                  <span className="text-sm text-gray-600 font-medium">Selected Country</span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 rounded-full bg-orange-500"></div>
+                  <span className="text-slate-600">Selected</span>
                 </div>
               </div>
+            </div>
+            
+            <div className="flex items-center space-x-6">
+              {legendColorItems.map((item, idx) => (
+                <div key={item.score} className="flex items-center space-x-3">
+                  <div className="flex flex-col items-center">
+                    <div 
+                      className="w-6 h-6 rounded-lg shadow-sm border border-white/50" 
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <div className="text-xs font-medium text-slate-600 mt-1">{item.score}</div>
+                  </div>
+                  <div className="text-sm font-medium text-slate-700">{item.label}</div>
+                  {idx < legendColorItems.length - 1 && (
+                    <div className="w-8 h-px bg-gradient-to-r from-slate-300 to-transparent"></div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
         {/* Right Sidebar */}
-        <div className="w-96 bg-white border-l border-blue-100 flex flex-col">
-          <div className="p-6 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-white">
-            <h2 className="text-2xl font-extrabold text-blue-900">AI Readiness Analysis</h2>
-            <p className="text-sm text-blue-500 mt-1">Metrics and data points</p>
+        <div className="w-96 bg-white/90 backdrop-blur-sm border-l border-slate-200/50 flex flex-col shadow-xl">
+          <div className="p-6 border-b border-slate-200/50 bg-gradient-to-r from-indigo-50/50 to-purple-50/50">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-800">Country Analysis</h2>
+                <p className="text-sm text-slate-500">Detailed AI readiness insights</p>
+              </div>
+            </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-6">
             {selectedCountry ? (
-              <div className="space-y-6 animate-fade-in">
-                {/* Country Header */}
-                <div className="flex items-center space-x-4">
-                  <div className="bg-gray-200 border-2 border-dashed rounded-2xl w-14 h-14 flex-shrink-0 flex items-center justify-center text-gray-500 text-2xl font-bold">
-                    {selectedCountry.properties?.name?.slice(0,2)?.toUpperCase() ?? '--'}
+              <div className="space-y-6">
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+                    <span className="text-2xl font-bold text-slate-600">
+                      {selectedCountry.properties?.name?.slice(0,2)?.toUpperCase() ?? '--'}
+                    </span>
                   </div>
-                  <div>
-                    <h3 className="text-2xl font-extrabold text-blue-900">{selectedCountry.properties?.name ?? 'Unknown'}</h3>
-                  </div>
+                  <h3 className="text-2xl font-bold text-slate-800 mb-2">
+                    {selectedCountry.properties?.name ?? 'Unknown'}
+                  </h3>
+                  {(() => {
+                    const category = getScoreCategory(selectedCountry.properties.aiReadiness ?? 0);
+                    return (
+                      <div className={`inline-block px-4 py-2 rounded-full text-sm font-semibold ${category.bg} ${category.color}`}>
+                        {category.label} AI Readiness
+                      </div>
+                    );
+                  })()}
                 </div>
 
-                {/* Overall Score */}
-                <div className="bg-green-50 p-5 rounded-xl shadow-sm text-center">
-                    <p className="text-base text-green-700 font-semibold">Overall AI Readiness Score</p>
-                    <p className="text-5xl font-extrabold mt-2 text-green-900">{selectedCountry.properties.aiReadiness ?? 'N/A'}<span className="text-3xl text-green-400">/100</span></p>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-4">
-                        <div className="bg-gradient-to-r from-green-500 to-green-700 h-2.5 rounded-full transition-all duration-700" style={{ width: `${selectedCountry.properties.aiReadiness}%` }}></div>
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-100/50 shadow-sm">
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-slate-600 mb-2">Overall AI Readiness Score</p>
+                    <div className="flex items-end justify-center space-x-2 mb-4">
+                      <span className="text-5xl font-bold text-slate-800">
+                        {selectedCountry.properties.aiReadiness ?? 'N/A'}
+                      </span>
+                      <span className="text-2xl font-semibold text-slate-500 pb-2">/100</span>
                     </div>
-                </div>
-                
-                <div className="pt-4 text-gray-600 text-center">
-                    <p>Select another country to see its detailed AI readiness score.</p>
+                    <div className="w-full bg-white/50 rounded-full h-3 shadow-inner">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-1000 shadow-sm" 
+                        style={{ width: `${selectedCountry.properties.aiReadiness}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
 
+                <div className="space-y-4">
+                  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-slate-600">Global Ranking</span>
+                      <span className="text-lg font-bold text-slate-800">
+                        #{(filteredCountries.findIndex(c => c.id === selectedCountry.id) + 1)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-slate-600">Readiness Level</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="flex-1 bg-slate-100 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-emerald-400 to-emerald-600 h-2 rounded-full transition-all duration-700" 
+                          style={{ width: `${selectedCountry.properties.aiReadiness}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-semibold text-slate-700">
+                        {selectedCountry.properties.aiReadiness}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 rounded-xl p-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-amber-800 mb-1">AI Readiness Insights</p>
+                      <p className="text-xs text-amber-700">
+                        This score reflects the country's infrastructure, policy framework, and technological adoption for AI development.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-center p-6 animate-fade-in">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-blue-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h3 className="text-lg font-semibold text-blue-700 mb-1">No Country Selected</h3>
-                <p className="text-blue-400 max-w-xs">
-                  Select a country from the list or on the map to view its AI readiness data.
-                </p>
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <div className="w-24 h-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl flex items-center justify-center mb-6 shadow-inner">
+                  <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-bold text-slate-800">Explore AI Readiness</h3>
+                  <p className="text-slate-500 max-w-xs leading-relaxed">
+                    Select any country from the map or rankings to discover detailed AI readiness metrics and insights.
+                  </p>
+                  <div className="flex flex-col space-y-2 text-sm text-slate-400">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-slate-300 rounded-full"></div>
+                      <span>Click on countries in the map</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-slate-300 rounded-full"></div>
+                      <span>Browse the rankings list</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-slate-300 rounded-full"></div>
+                      <span>Search for specific countries</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
           
-          <div className="p-5 border-t bg-gradient-to-r from-blue-50 to-white border-blue-100">
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl transition-all font-semibold flex items-center justify-center shadow focus:outline-none focus:ring-2 focus:ring-blue-400">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+          <div className="p-6 border-t border-slate-200/50 bg-gradient-to-r from-slate-50/50 to-gray-50/50">
+            <button
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-xl transition-all font-semibold flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-blue-300"
+              onClick={() => window.open('https://oxfordinsights.com/ai-readiness/ai-readiness-index/', '_blank')}
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              Download Full Report (PDF)
+              Download Full Report
             </button>
           </div>
         </div>
       </div>
-      {/* Custom scrollbar and fade-in animation */}
+
+      {/* Enhanced Custom Styles */}
       <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
+        /* Custom scrollbar styling */
+        .overflow-y-auto::-webkit-scrollbar {
+          width: 6px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #e0e7ef;
-          border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
+        
+        .overflow-y-auto::-webkit-scrollbar-track {
           background: transparent;
         }
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: none; }
+        
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+          background: linear-gradient(to bottom, #cbd5e1, #94a3b8);
+          border-radius: 3px;
         }
-        .animate-fade-in {
-          animation: fade-in 0.7s cubic-bezier(0.4,0,0.2,1);
+        
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(to bottom, #94a3b8, #64748b);
+        }
+        
+        /* Smooth animations */
+        .transition-all {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Map container styling */
+        .leaflet-container {
+          font-family: inherit;
+        }
+        
+        /* Enhanced focus states */
+        .focus\:ring-2:focus {
+          outline: 2px solid transparent;
+          outline-offset: 2px;
+        }
+        
+        /* Backdrop blur support */
+        .backdrop-blur-sm {
+          backdrop-filter: blur(4px);
+        }
+        
+        /* Smooth gradient overlays */
+        .bg-gradient-to-br {
+          background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+        }
+        
+        /* Enhanced shadow effects */
+        .shadow-2xl {
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .shadow-xl {
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* Improved button hover effects */
+        .transform:hover {
+          transform: scale(1.02);
+        }
+        
+        /* Loading animation */
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        
+        .animate-spin {
+          animation: spin 1s linear infinite;
+        }
+        
+        /* Improved card styling */
+        .border-slate-200\/50 {
+          border-color: rgba(226, 232, 240, 0.5);
+        }
+        
+        /* Enhanced map interaction */
+        .leaflet-interactive {
+          cursor: pointer;
+        }
+        
+        .leaflet-interactive:hover {
+          filter: brightness(1.1);
         }
       `}</style>
     </div>
