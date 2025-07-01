@@ -14,9 +14,9 @@ function MapLoadingScreen({ onComplete }: { onComplete: () => void }) {
   const [fadeOut, setFadeOut] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const LOADING_DURATION = 4000; // 4 seconds
+  const LOADING_DURATION = 1000; // 1 seconds
 
-  // Matrix rain effect
+  // Blue AI Matrix rain effect
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -30,17 +30,23 @@ function MapLoadingScreen({ onComplete }: { onComplete: () => void }) {
     const fontSize = 18;
     const columns = Math.floor(width / fontSize);
     const drops: number[] = Array(columns).fill(1);
-    const chars = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズヅブプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッンABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    // AI/robotic glyphs: 0, 1, |, =, #, Latin, and some circuit-like unicode
+    const chars = "01|=#AI人工智能ΣλΩµπβΓΔΞΦΨαβγδεζηθικλμνξοπρστυφχψωABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const blueShades = ["#38bdf8", "#0ea5e9", "#1e40af", "#60a5fa", "#2563eb"];
 
     function draw() {
       if (!ctx) return;
-      ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
+      ctx.fillStyle = "rgba(10, 20, 40, 0.18)";
       ctx.fillRect(0, 0, width, height);
       ctx.font = fontSize + "px monospace";
-      ctx.fillStyle = "#00ff41";
       for (let i = 0; i < drops.length; i++) {
         const text = chars[Math.floor(Math.random() * chars.length)];
+        const color = blueShades[Math.floor(Math.random() * blueShades.length)];
+        ctx.fillStyle = color;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 8;
         ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        ctx.shadowBlur = 0;
         if (drops[i] * fontSize > height && Math.random() > 0.975) {
           drops[i] = 0;
         }
@@ -95,27 +101,29 @@ function MapLoadingScreen({ onComplete }: { onComplete: () => void }) {
   if (!isLoading) return null;
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center overflow-hidden matrix-bg ${fadeOut ? 'matrix-fade' : ''}`}> 
+    <div className={`fixed inset-0 z-50 flex items-center justify-center overflow-hidden ai-matrix-bg ${fadeOut ? 'ai-matrix-fade' : ''}`}> 
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" style={{ display: 'block', zIndex: 1 }} />
       <div className="flex items-center justify-center w-full h-full relative z-10">
         <div
-          className="matrix-bar"
+          className="ai-matrix-bar"
           style={{
             width: fadeOut ? '100vw' : `${Math.max(32, 4 * progress)}px`,
             height: 18,
             borderRadius: fadeOut ? 0 : 8,
-            background: 'linear-gradient(90deg, #00ff41 0%, #007f20 100%)',
-            boxShadow: '0 0 16px 2px #00ff41, 0 0 32px 8px #003f10',
+            background: 'linear-gradient(90deg, #38bdf8 0%, #0ea5e9 60%, #1e40af 100%)',
+            boxShadow: '0 0 24px 4px #38bdf8, 0 0 48px 12px #0ea5e9',
+            border: '1.5px solid #60a5fa',
             transition: 'width 0.7s cubic-bezier(0.4,0,0.2,1), border-radius 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s',
             opacity: fadeOut ? 0 : 1,
+            filter: 'drop-shadow(0 0 8px #38bdf8) drop-shadow(0 0 16px #0ea5e9)'
           }}
         />
       </div>
       <style jsx global>{`
-        .matrix-bg {
-          background: #000;
+        .ai-matrix-bg {
+          background: #0a1428;
         }
-        .matrix-fade {
+        .ai-matrix-fade {
           transition: opacity 0.7s;
           opacity: 0;
         }
