@@ -6,7 +6,7 @@ import { useAuthStore, AuthCredentials } from '@/store/auth';
 // The browser will ignore them if set here. Your Spring Boot backend is already configured for CORS.
 export const api = axios.create({
     baseURL: "http://localhost:8080",
-    timeout: 10000,
+    timeout: 100000000,
     headers: {
         "Content-Type": "application/json",
     },
@@ -75,6 +75,7 @@ export const performLogin = async (credentials: AuthCredentials): Promise<void> 
         },
     });
 };
+
 
 // Default export the configured instance for use elsewhere if needed.
 export default api;

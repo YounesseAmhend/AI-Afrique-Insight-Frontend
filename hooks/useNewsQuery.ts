@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { newsApi } from '../apis/newsApi';
 
@@ -8,6 +7,7 @@ export const newsKeys = {
   trending:  ['trendingNews'] as const,
   lists: () => [...newsKeys.all, 'list'] as const,
   list: (filters: string) => [...newsKeys.lists(), { filters }] as const,
+  paginated: (page: number, category: string) => [...newsKeys.all, 'paginated', page, category] as const,
   details: () => [...newsKeys.all, 'detail'] as const,
   detail: (id: number) => [...newsKeys.details(), id] as const,
 };
@@ -17,6 +17,14 @@ export const useGetAllNews = () => {
   return useQuery({
     queryKey: newsKeys.lists(),
     queryFn: newsApi.getAllNews,
+  });
+};
+
+// Hook for getting paginated news with category filtering
+export const useGetPaginatedNews = (page: number = 0, size: number = 6, categoryId?: number) => {
+  return useQuery({
+    queryKey: newsKeys.paginated(page, categoryId?.toString() || 'all'),
+    queryFn: () => newsApi.getPaginatedNews(page, size, categoryId),
   });
 };
 

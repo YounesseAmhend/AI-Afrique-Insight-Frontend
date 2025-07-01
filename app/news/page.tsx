@@ -1,6 +1,5 @@
-import NewsGrid from "@/app/news/components/NewsGrid";
 import { Metadata } from "next";
-import { HomeNewsGrid } from "./components/HomeNewsGrid";
+import { NewsPageGrid } from "./components/NewsPageGrid";
 
 export const metadata: Metadata = {
     title: "Latest News | AI Industry News",
@@ -20,7 +19,7 @@ export default function NewsPage() {
             </p>
           </div> */}
                 <div className='space-y-16'>
-                    <HomeNewsGrid />
+                    <NewsPageGrid />
                 </div>
             </div>
         </div>
