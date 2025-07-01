@@ -1,11 +1,13 @@
 "use client";
+
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetTrendingNews } from "@/hooks/useNewsQuery";
 import { getCategoryColor } from "@/lib/categoryColors";
-import { getCategoryIcon } from "@/lib/categoryIcons";
-import { ArrowUpRight, Clock, TrendingUp, Sparkles } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+// We still use Framer Motion, but with a more refined approach
+import { motion, Variants } from "framer-motion";
 
 export default function FeaturedNews() {
     const { data: trendingNews, isLoading, isError } = useGetTrendingNews();
@@ -14,195 +16,154 @@ export default function FeaturedNews() {
         try {
             const date = new Date(dateString);
             return date.toLocaleDateString("en-GB", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
+                year: "numeric", month: "long", day: "numeric"
             });
-        } catch {
-            return "Unknown date";
-        }
+        } catch { return "Unknown date"; }
     }
 
+    function getPlainText(htmlString: string) {
+        if (typeof window !== "undefined") {
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = htmlString;
+            return tempDiv.textContent || tempDiv.innerText || "";
+        }
+        return "";
+    }
+
+    // --- Animation variants for a subtle, staggered entry ---
+    const containerVariants: Variants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+        },
+    };
+
+    const itemVariants: Variants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1, y: 0,
+            transition: { duration: 0.4, ease: "easeOut" },
+        },
+    };
+
     if (isLoading) {
+        // Skeleton remains clean and simple
         return (
             <section className='space-y-6'>
                 <div className='flex items-center justify-between'>
-                    <h2 className='text-2xl font-bold text-foreground flex items-center gap-2'>
-                        <Sparkles className="h-5 w-5 text-primary" />
-                        Top Stories
-                    </h2>
-                    <Skeleton className='h-4 w-24' />
+                    <h2 className='text-2xl font-bold text-foreground'>Top Stories</h2>
+                    <Skeleton className='h-5 w-24' />
                 </div>
                 <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-                    <Card className='col-span-1 lg:col-span-2 overflow-hidden group border-0 shadow-lg bg-gradient-to-br from-primary/5 via-primary/10 to-secondary/5'>
-                        <div className='p-6 space-y-4'>
-                            <div className='flex items-center justify-between'>
-                                <Skeleton className='h-6 w-24 rounded-full' />
-                                <Skeleton className='h-4 w-20' />
-                            </div>
-                            <Skeleton className='h-8 w-3/4' />
-                            <Skeleton className='h-4 w-full' />
-                            <Skeleton className='h-4 w-2/3' />
-                        </div>
+                    <Card className='col-span-1 lg:col-span-2 p-8 h-[450px] border-2'>
+                        <Skeleton className='h-10 w-3/4 mb-4' />
+                        <Skeleton className='h-5 w-full mb-2' />
+                        <Skeleton className='h-5 w-5/6' />
                     </Card>
                     <div className='col-span-1 space-y-6'>
-                        {[1, 2].map((_, index) => (
-                            <Card
-                                key={index}
-                                className='overflow-hidden group border-0 shadow-md bg-gradient-to-br from-muted/30 to-muted/10'
-                            >
-                                <div className='p-4 space-y-3'>
-                                    <div className='flex items-center justify-between'>
-                                        <Skeleton className='h-5 w-20 rounded-full' />
-                                        <Skeleton className='h-4 w-16' />
-                                    </div>
-                                    <Skeleton className='h-5 w-3/4' />
-                                    <Skeleton className='h-4 w-full' />
-                                </div>
-                            </Card>
-                        ))}
+                        {[1, 2].map((_, index) => <Card key={index} className='p-6 h-[213px] border' />)}
                     </div>
                 </div>
             </section>
         );
     }
 
-    if (isError || !trendingNews || trendingNews.length < 3) {
-        return null;
-    }
+    if (isError || !trendingNews || trendingNews.length < 3) return null;
 
     const [mainStory, ...secondaryStories] = trendingNews;
 
     return (
-        <section className='space-y-6'>
-            <div className='flex items-center justify-between'>
-                <h2 className='text-2xl font-bold text-foreground flex items-center gap-2'>
-                    <Sparkles className="h-5 w-5 text-primary animate-pulse" />
-                    Top Stories
-                </h2>
-                <Link
-                    href='/news'
-                    className='text-sm font-medium text-primary hover:underline flex items-center gap-1 group'
-                >
+        <motion.section
+            className='space-y-6'
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+        >
+            <motion.div variants={itemVariants} className='flex items-center justify-between'>
+                <h2 className='text-2xl font-bold text-foreground'>Top Stories</h2>
+                <Link href='/news' className='text-sm font-medium text-primary hover:underline'>
                     View all news
-                    <ArrowUpRight className='h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5' />
                 </Link>
-            </div>
+            </motion.div>
 
             <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-                {/* Main Story Card */}
-                <Card className='col-span-1 lg:col-span-2 overflow-hidden group border-0 shadow-xl bg-gradient-to-br from-primary/5 via-primary/10 to-secondary/5 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]'>
-                    <a href={"news/" + mainStory.id} className='block'>
-                        <div className='p-6 space-y-4'>
-                            <div className='flex items-center gap-3'>
-                                <div
-                                    className='flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-sm'
-                                    style={{
-                                        backgroundColor: getCategoryColor(mainStory.category.name),
-                                        color: "#fff",
-                                    }}
-                                >
-                                    {(() => {
-                                        const IconComponent = getCategoryIcon(mainStory.category.name);
-                                        return <IconComponent className="h-3 w-3" />;
-                                    })()}
-                                    {mainStory.category.name}
+                {/* ================================== */}
+                {/* === The Professional Main Card === */}
+                {/* ================================== */}
+                <motion.div variants={itemVariants} className="col-span-1 lg:col-span-2">
+                    <motion.div
+                        whileHover={{ scale: 1.025, transition: { duration: 0.2, ease: "easeOut" } }}
+                        className='h-full'
+                    >
+                        <Card className='group h-full flex flex-col justify-between p-6 md:p-8 border-2 dark:border-gray-800 hover:border-primary/50 transition-colors duration-300'>
+                            <div>
+                                <div className='flex items-center justify-between mb-4'>
+                                    <span className='text-xs font-bold uppercase px-3 py-1 rounded-full text-white' style={{ backgroundColor: getCategoryColor(mainStory.category.name) }}>
+                                        {mainStory.category.name}
+                                    </span>
+                                    <span className='text-xs text-foreground/70'>{formatDate(mainStory.postDate)}</span>
                                 </div>
-                                <div className='flex items-center gap-1 text-xs text-muted-foreground'>
-                                    <Clock className='h-3 w-3' />
-                                    {formatDate(mainStory.postDate)}
-                                </div>
-                            </div>
-                            
-                            <div className='space-y-3'>
-                                <h3 className='text-xl md:text-2xl font-bold text-foreground group-hover:text-primary transition-colors'>
-                                    {mainStory.title}
+                                <h3 className='text-2xl md:text-3xl font-extrabold text-foreground leading-tight mb-4'>
+                                    <a href={"news/" + mainStory.id} className='hover:underline decoration-primary/50 decoration-2 underline-offset-4'>
+                                        {mainStory.title}
+                                    </a>
                                 </h3>
-                                <p className='text-sm text-muted-foreground line-clamp-3 leading-relaxed'>
-                                    {(() => {
-                                        const tempDiv = document.createElement("div");
-                                        tempDiv.innerHTML = mainStory.body;
-                                        return tempDiv.textContent || tempDiv.innerText || "";
-                                    })()}
+                                <p className='text-foreground/80 text-sm md:text-base line-clamp-3'>
+                                    {getPlainText(mainStory.body)}
                                 </p>
                             </div>
-
-                            <div className='flex items-center justify-between pt-2'>
-                                <Link
-                                    href={mainStory.url}
-                                    className='text-xs font-medium text-primary hover:text-primary/80 flex items-center gap-1 w-fit group/link'
-                                >
-                                    Read full story
-                                    <ArrowUpRight className='h-3 w-3 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5' />
-                                </Link>
-                                <div className='flex items-center gap-1 text-xs text-muted-foreground'>
-                                    <TrendingUp className='h-3 w-3 text-green-500' />
-                                    Trending
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </Card>
-
-                {/* Secondary Stories */}
-                <div className='col-span-1 space-y-6'>
-                    {secondaryStories.slice(0, 2).map((news, index) => (
-                        <Card
-                            key={index}
-                            className='overflow-hidden group border-0 shadow-md bg-gradient-to-br from-muted/30 to-muted/10 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]'
-                        >
-                            <div className='p-4 space-y-3'>
-                                <div className='flex items-center justify-between'>
-                                    <div
-                                        className='flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium shadow-sm'
-                                        style={{
-                                            backgroundColor: getCategoryColor(news.category.name),
-                                            color: "#fff",
-                                        }}
-                                    >
-                                        {(() => {
-                                            const IconComponent = getCategoryIcon(news.category.name);
-                                            return <IconComponent className="h-3 w-3" />;
-                                        })()}
-                                        {news.category.name}
-                                    </div>
-                                    <div className='flex items-center gap-1 text-xs text-muted-foreground'>
-                                        <Clock className='h-3 w-3' />
-                                        {formatDate(news.postDate)}
-                                    </div>
-                                </div>
-                                
-                                <a href={"news/" + news.id} className='block'>
-                                    <h3 className='text-base font-bold text-foreground group-hover:text-primary transition-colors mb-2'>
-                                        {news.title}
-                                    </h3>
-                                    <p className='text-sm text-muted-foreground line-clamp-2 leading-relaxed'>
-                                        {(() => {
-                                            const tempDiv = document.createElement("div");
-                                            tempDiv.innerHTML = news.body;
-                                            return tempDiv.textContent || tempDiv.innerText || "";
-                                        })()}
-                                    </p>
+                            <div className='mt-6'>
+                                <a href={mainStory.url} target='_blank' rel='noopener noreferrer' className='text-sm font-bold text-primary hover:text-primary/80 flex items-center gap-1.5 w-fit group/link'>
+                                    Read Full Story
+                                    <motion.div className="overflow-hidden">
+                                        <motion.div className="transition-transform group-hover/link:translate-x-1">
+                                            <ArrowUpRight className='h-4 w-4' />
+                                        </motion.div>
+                                    </motion.div>
                                 </a>
-
-                                <div className='flex items-center justify-between pt-1'>
-                                    <Link
-                                        href={news.url}
-                                        className='text-xs font-medium text-primary hover:text-primary/80 flex items-center gap-1 w-fit group/link'
-                                    >
-                                        Read full story
-                                        <ArrowUpRight className='h-3 w-3 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5' />
-                                    </Link>
-                                    <div className='flex items-center gap-1 text-xs text-muted-foreground'>
-                                        <TrendingUp className='h-3 w-3 text-green-500' />
-                                        Hot
-                                    </div>
-                                </div>
                             </div>
                         </Card>
+                    </motion.div>
+                </motion.div>
+
+                {/* ======================================= */}
+                {/* === The Professional Secondary Cards === */}
+                {/* ======================================= */}
+                <motion.div variants={containerVariants} className='col-span-1 space-y-6'>
+                    {secondaryStories.slice(0, 2).map((news) => (
+                        <motion.div
+                            key={news.id}
+                            variants={itemVariants}
+                            whileHover={{ y: -5, transition: { duration: 0.2, ease: "easeOut" } }}
+                        >
+                            <Card className='group p-6 h-full flex flex-col justify-between border dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-900/40 transition-colors duration-300'>
+                                <div>
+                                    <div className='flex items-center justify-between mb-3'>
+                                        <span className='text-xs font-semibold px-2 py-0.5 rounded-full text-white' style={{ backgroundColor: getCategoryColor(news.category.name) }}>
+                                            {news.category.name}
+                                        </span>
+                                        <span className='text-xs text-foreground/60'>{formatDate(news.postDate)}</span>
+                                    </div>
+                                    <a href={"news/" + news.id}>
+                                        <h3 className='text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-200'>
+                                            {news.title}
+                                        </h3>
+                                    </a>
+                                </div>
+                                <div className='mt-4'>
+                                    <a href={news.url} target='_blank' rel='noopener noreferrer' className='text-xs font-semibold text-primary/80 hover:text-primary flex items-center gap-1 w-fit group/link'>
+                                        Read Story
+                                        <div className="transition-transform group-hover/link:translate-x-0.5">
+                                            <ArrowUpRight className='h-3 w-3' />
+                                        </div>
+                                    </a>
+                                </div>
+                            </Card>
+                        </motion.div>
                     ))}
-                </div>
+                </motion.div>
             </div>
-        </section>
+        </motion.section>
     );
 }
