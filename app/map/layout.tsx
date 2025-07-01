@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import React from 'react';
 import Link from "next/link";
 
@@ -11,11 +11,59 @@ import Link from "next/link";
 
 function MapLoadingScreen({ onComplete }: { onComplete: () => void }) {
   const [progress, setProgress] = useState(0);
-  const [morphToCircle, setMorphToCircle] = useState(false);
-  const [expandCircle, setExpandCircle] = useState(false);
+  const [fadeOut, setFadeOut] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const LOADING_DURATION = 4000; // 4 seconds, adjust as needed
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const LOADING_DURATION = 4000; // 4 seconds
 
+  // Matrix rain effect
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    let animationFrameId: number;
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+    const fontSize = 18;
+    const columns = Math.floor(width / fontSize);
+    const drops: number[] = Array(columns).fill(1);
+    const chars = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズヅブプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッンABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    function draw() {
+      if (!ctx) return;
+      ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
+      ctx.fillRect(0, 0, width, height);
+      ctx.font = fontSize + "px monospace";
+      ctx.fillStyle = "#00ff41";
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+      animationFrameId = requestAnimationFrame(draw);
+    }
+    draw();
+    function handleResize() {
+      if (!canvas) return;
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    }
+    window.addEventListener('resize', handleResize);
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Loading bar progress
   useEffect(() => {
     const steps = 100;
     const intervalTime = LOADING_DURATION / steps;
@@ -25,110 +73,53 @@ function MapLoadingScreen({ onComplete }: { onComplete: () => void }) {
           clearInterval(interval);
           return 100;
         }
-        const easeOutQuart = 1 - Math.pow(1 - (prev / 100), 4);
-        return Math.min(prev + (1 + easeOutQuart * 0.5), 100);
+        return Math.min(prev + 1, 100);
       });
     }, intervalTime);
     return () => clearInterval(interval);
   }, []);
 
+  // Fade out and reveal
   useEffect(() => {
     if (progress >= 100) {
       setTimeout(() => {
-        setMorphToCircle(true);
+        setFadeOut(true);
         setTimeout(() => {
-          setExpandCircle(true);
-          setTimeout(() => {
-            setIsLoading(false);
-            onComplete();
-          }, 700);
-        }, 600);
-      }, 300);
+          setIsLoading(false);
+          onComplete();
+        }, 700);
+      }, 200);
     }
   }, [progress, onComplete]);
 
   if (!isLoading) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-white flex items-center justify-center overflow-hidden">
-      {/* Map themed background */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none select-none">
-        <svg className="w-full h-full" viewBox="0 0 800 600" fill="none">
-          <rect width="800" height="600" fill="#e0f2fe" />
-          <path d="M0 400 Q200 350 400 400 T800 400" stroke="#38bdf8" strokeWidth="8" fill="none" />
-          <circle cx="200" cy="300" r="40" fill="#0ea5e9" opacity="0.2" />
-          <circle cx="600" cy="200" r="30" fill="#1e40af" opacity="0.15" />
-          <rect x="300" y="100" width="200" height="40" rx="20" fill="#0ea5e9" opacity="0.08" />
-        </svg>
-      </div>
-      {/* Map icon and title */}
-      <div className="relative z-10 flex flex-col items-center space-y-8">
-        <div className="flex flex-col items-center">
-          <div className="mb-4">
-            <div className="w-16 h-16 mx-auto bg-gradient-to-br from-sky-400 to-blue-800 rounded-2xl flex items-center justify-center shadow-lg">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A2 2 0 013 15.382V6.618a2 2 0 011.105-1.789l6-3a2 2 0 011.79 0l6 3A2 2 0 0121 6.618v8.764a2 2 0 01-1.105 1.789L15 20" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold text-blue-900 mb-2 bg-gradient-to-r from-sky-500 via-blue-700 to-blue-900 bg-clip-text text-transparent">
-            Africa AI Readiness Map
-          </h1>
-          <p className="text-blue-700 text-sm">Loading interactive map experience...</p>
-        </div>
-        {/* Morphing Bar/Circle Animation */}
-        <div className="flex items-center justify-center" style={{ minHeight: 48 }}>
-          <div
-            style={
-              morphToCircle
-                ? {
-                    width: 48,
-                    height: 48,
-                    borderRadius: 24,
-                    background: "linear-gradient(90deg, #0ea5e9 0%, #1e40af 100%)",
-                    boxShadow: "0 4px 32px 0 rgba(30,64,175,0.15)",
-                    transition: 'all 0.6s cubic-bezier(0.4,0,0.2,1)'
-                  }
-                : {
-                    width: 320,
-                    height: 12,
-                    borderRadius: 6,
-                    background: "linear-gradient(90deg, #0ea5e9 0%, #1e40af 100%)",
-                    boxShadow: "0 2px 16px 0 rgba(30,64,175,0.10)",
-                    transition: 'all 0.8s cubic-bezier(0.4,0,0.2,1)'
-                  }
-            }
-            className="overflow-hidden flex items-center justify-start relative"
-          >
-            {!morphToCircle && (
-              <div
-                className="h-full rounded-full"
-                style={{
-                  background: "linear-gradient(90deg, #38bdf8 0%, #1e40af 100%)",
-                  width: `${progress}%`,
-                  transition: 'width 0.15s cubic-bezier(0.4,0,0.2,1)'
-                }}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-      {/* Expanding Circle Overlay */}
-      {expandCircle && (
+    <div className={`fixed inset-0 z-50 flex items-center justify-center overflow-hidden matrix-bg ${fadeOut ? 'matrix-fade' : ''}`}> 
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" style={{ display: 'block', zIndex: 1 }} />
+      <div className="flex items-center justify-center w-full h-full relative z-10">
         <div
-          className="fixed left-1/2 top-1/2"
+          className="matrix-bar"
           style={{
-            zIndex: 60,
-            borderRadius: "50%",
-            width: 48,
-            height: 48,
-            background: "linear-gradient(90deg, #0ea5e9 0%, #1e40af 100%)",
-            transform: 'translate(-50%, -50%) scale(40)',
-            transition: 'transform 0.7s cubic-bezier(0.4,0,0.2,1)'
+            width: fadeOut ? '100vw' : `${Math.max(32, 4 * progress)}px`,
+            height: 18,
+            borderRadius: fadeOut ? 0 : 8,
+            background: 'linear-gradient(90deg, #00ff41 0%, #007f20 100%)',
+            boxShadow: '0 0 16px 2px #00ff41, 0 0 32px 8px #003f10',
+            transition: 'width 0.7s cubic-bezier(0.4,0,0.2,1), border-radius 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s',
+            opacity: fadeOut ? 0 : 1,
           }}
         />
-      )}
+      </div>
+      <style jsx global>{`
+        .matrix-bg {
+          background: #000;
+        }
+        .matrix-fade {
+          transition: opacity 0.7s;
+          opacity: 0;
+        }
+      `}</style>
     </div>
   );
 }
