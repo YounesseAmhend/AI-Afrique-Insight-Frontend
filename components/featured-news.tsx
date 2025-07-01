@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useGetTrendingNews } from "@/hooks/useNewsQuery";
 import { getCategoryColor } from "@/lib/categoryColors";
 import { getCategoryIcon } from "@/lib/categoryIcons";
-import { ArrowUpRight, Clock, TrendingUp, Sparkles, Zap, Star } from "lucide-react";
+import { ArrowUpRight, Clock, Brain, Cpu, Network, Database, CircuitBoard, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -41,7 +41,7 @@ export default function FeaturedNews() {
             <section className='space-y-6'>
                 <div className='flex items-center justify-between'>
                     <h2 className='text-2xl font-bold text-foreground flex items-center gap-2'>
-                        <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+                        <Brain className="h-5 w-5 text-primary animate-pulse" />
                         Top Stories
                     </h2>
                     <Skeleton className='h-4 w-24' />
@@ -88,26 +88,73 @@ export default function FeaturedNews() {
 
     return (
         <section className='space-y-6 relative'>
-            {/* Animated Background Elements */}
+            {/* AI Neural Network Background */}
             <div className="absolute inset-0 -z-10 overflow-hidden">
-                <div className="absolute top-0 left-1/4 w-72 h-72 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '0s'}} />
-                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gradient-to-l from-primary/15 to-secondary/15 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}} />
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '4s'}} />
+                {/* Neural Network Nodes */}
+                <div className="absolute top-10 left-10 w-3 h-3 bg-primary rounded-full animate-ping" style={{animationDelay: '0s'}} />
+                <div className="absolute top-20 right-20 w-2 h-2 bg-secondary rounded-full animate-ping" style={{animationDelay: '1s'}} />
+                <div className="absolute bottom-20 left-1/4 w-2 h-2 bg-primary rounded-full animate-ping" style={{animationDelay: '2s'}} />
+                <div className="absolute top-1/3 right-1/3 w-3 h-3 bg-secondary rounded-full animate-ping" style={{animationDelay: '3s'}} />
+                <div className="absolute bottom-1/3 left-1/3 w-2 h-2 bg-primary rounded-full animate-ping" style={{animationDelay: '4s'}} />
+                
+                {/* Neural Network Connections */}
+                <svg className="absolute inset-0 w-full h-full opacity-20">
+                    <defs>
+                        <linearGradient id="neuralGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.5" />
+                            <stop offset="50%" stopColor="hsl(var(--secondary))" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.5" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M 50 50 Q 200 100 350 50" stroke="url(#neuralGradient)" strokeWidth="1" fill="none" className="animate-pulse" />
+                    <path d="M 350 50 Q 500 100 650 50" stroke="url(#neuralGradient)" strokeWidth="1" fill="none" className="animate-pulse" style={{animationDelay: '0.5s'}} />
+                    <path d="M 50 150 Q 200 200 350 150" stroke="url(#neuralGradient)" strokeWidth="1" fill="none" className="animate-pulse" style={{animationDelay: '1s'}} />
+                    <path d="M 350 150 Q 500 200 650 150" stroke="url(#neuralGradient)" strokeWidth="1" fill="none" className="animate-pulse" style={{animationDelay: '1.5s'}} />
+                </svg>
+
+                {/* Data Flow Particles */}
+                <div className="absolute inset-0">
+                    {[...Array(8)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="absolute w-1 h-1 bg-primary rounded-full animate-pulse"
+                            style={{
+                                left: `${Math.random() * 100}%`,
+                                top: `${Math.random() * 100}%`,
+                                animationDelay: `${i * 0.5}s`,
+                                animationDuration: '3s'
+                            }}
+                        />
+                    ))}
+                </div>
+
+                {/* AI Circuit Patterns */}
+                <div className="absolute top-0 left-0 w-full h-full opacity-5">
+                    <div className="absolute top-10 left-10 w-20 h-20 border border-primary/30 rounded-lg animate-spin" style={{animationDuration: '20s'}} />
+                    <div className="absolute bottom-10 right-10 w-16 h-16 border border-secondary/30 rounded-lg animate-spin" style={{animationDuration: '15s', animationDirection: 'reverse'}} />
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 border border-primary/20 rounded-full animate-spin" style={{animationDuration: '25s'}} />
+                </div>
             </div>
 
             <div className='flex items-center justify-between'>
                 <h2 className='text-2xl font-bold text-foreground flex items-center gap-2 group'>
                     <div className="relative">
-                        <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+                        <Brain className="h-5 w-5 text-primary animate-pulse" />
                         <div className="absolute inset-0 bg-primary/20 rounded-full blur-sm animate-ping" />
+                        {/* AI Processing Dots */}
+                        <div className="absolute -top-1 -right-1 flex gap-0.5">
+                            <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0s'}} />
+                            <div className="w-1 h-1 bg-yellow-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}} />
+                            <div className="w-1 h-1 bg-red-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}} />
+                        </div>
                     </div>
                     <span className="bg-gradient-to-r from-primary via-purple-600 to-primary bg-clip-text text-transparent animate-pulse">
-                        Top Stories
+                        AI-Powered Top Stories
                     </span>
                     <div className="flex gap-1">
-                        <Star className="h-3 w-3 text-yellow-500 animate-bounce" style={{animationDelay: '0s'}} />
-                        <Star className="h-3 w-3 text-yellow-500 animate-bounce" style={{animationDelay: '0.2s'}} />
-                        <Star className="h-3 w-3 text-yellow-500 animate-bounce" style={{animationDelay: '0.4s'}} />
+                        <Cpu className="h-3 w-3 text-blue-500 animate-bounce" style={{animationDelay: '0s'}} />
+                        <Network className="h-3 w-3 text-green-500 animate-bounce" style={{animationDelay: '0.2s'}} />
+                        <Database className="h-3 w-3 text-purple-500 animate-bounce" style={{animationDelay: '0.4s'}} />
                     </div>
                 </h2>
                 <Link
@@ -121,27 +168,43 @@ export default function FeaturedNews() {
             </div>
 
             <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-                {/* Main Story Card with 3D Effects */}
+                {/* Main Story Card with Sophisticated AI Effects */}
                 <Card 
                     ref={cardRef}
-                    className='col-span-1 lg:col-span-2 overflow-hidden group border-0 shadow-xl bg-gradient-to-br from-primary/5 via-primary/10 to-secondary/5 hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] relative'
+                    className='col-span-1 lg:col-span-2 overflow-hidden group border-0 shadow-xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm hover:shadow-2xl transition-all duration-700 relative'
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                     style={{
-                        transform: isHovered ? `perspective(1000px) rotateX(${(mousePosition.y - (cardRef.current?.getBoundingClientRect().top || 0)) * 0.01}deg) rotateY(${(mousePosition.x - (cardRef.current?.getBoundingClientRect().left || 0)) * 0.01}deg)` : 'perspective(1000px) rotateX(0deg) rotateY(0deg)',
-                        transition: isHovered ? 'none' : 'all 0.5s ease-out'
+                        transform: isHovered ? `perspective(1200px) rotateX(${(mousePosition.y - (cardRef.current?.getBoundingClientRect().top || 0)) * 0.005}deg) rotateY(${(mousePosition.x - (cardRef.current?.getBoundingClientRect().left || 0)) * 0.005}deg) scale(1.01)` : 'perspective(1200px) rotateX(0deg) rotateY(0deg) scale(1)',
+                        transition: isHovered ? 'none' : 'all 0.7s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                 >
-                    {/* 3D Glow Effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
+                    {/* Sophisticated Gradient Border */}
+                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary/20 via-transparent to-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                     
-                    {/* Animated Border */}
-                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary via-purple-500 to-secondary p-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary via-purple-500 to-secondary rounded-lg animate-spin" style={{animationDuration: '3s'}} />
+                    {/* Elegant Corner Accents */}
+                    <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-primary/30 opacity-0 group-hover:opacity-100 transition-all duration-700 transform -translate-x-1 -translate-y-1" />
+                    <div className="absolute top-0 right-0 w-16 h-16 border-r-2 border-t-2 border-secondary/30 opacity-0 group-hover:opacity-100 transition-all duration-700 transform translate-x-1 -translate-y-1" />
+                    <div className="absolute bottom-0 left-0 w-16 h-16 border-l-2 border-b-2 border-secondary/30 opacity-0 group-hover:opacity-100 transition-all duration-700 transform -translate-x-1 translate-y-1" />
+                    <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-primary/30 opacity-0 group-hover:opacity-100 transition-all duration-700 transform translate-x-1 translate-y-1" />
+
+                    {/* Subtle Data Flow Lines */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-700">
+                        <svg className="w-full h-full">
+                            <defs>
+                                <linearGradient id="sophisticatedGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
+                                    <stop offset="100%" stopColor="hsl(var(--secondary))" stopOpacity="0.6" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M 0 30 L 100 30" stroke="url(#sophisticatedGradient)" strokeWidth="0.5" fill="none" className="animate-pulse" style={{animationDuration: '4s'}} />
+                            <path d="M 0 70 L 100 70" stroke="url(#sophisticatedGradient)" strokeWidth="0.5" fill="none" className="animate-pulse" style={{animationDuration: '4s', animationDelay: '1s'}} />
+                            <path d="M 0 110 L 100 110" stroke="url(#sophisticatedGradient)" strokeWidth="0.5" fill="none" className="animate-pulse" style={{animationDuration: '4s', animationDelay: '2s'}} />
+                        </svg>
                     </div>
 
                     <a href={"news/" + mainStory.id} className='block relative z-10'>
-                        <div className='p-6 space-y-4 bg-background/80 backdrop-blur-sm rounded-lg m-[2px]'>
+                        <div className='p-6 space-y-4'>
                             <div className='flex items-center gap-3'>
                                 <div
                                     className='flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-sm relative overflow-hidden group/category'
@@ -164,8 +227,8 @@ export default function FeaturedNews() {
                                     {formatDate(mainStory.postDate)}
                                 </div>
                                 <div className="flex items-center gap-1 ml-auto">
-                                    <Zap className="h-3 w-3 text-yellow-500 animate-bounce" />
-                                    <span className="text-xs font-bold text-yellow-600">FEATURED</span>
+                                    <CircuitBoard className="h-3 w-3 text-cyan-500 animate-pulse" />
+                                    <span className="text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent">AI ANALYZED</span>
                                 </div>
                             </div>
                             
@@ -193,14 +256,14 @@ export default function FeaturedNews() {
                                 </Link>
                                 <div className='flex items-center gap-1 text-xs text-muted-foreground'>
                                     <TrendingUp className='h-3 w-3 text-green-500 animate-pulse' />
-                                    <span className="font-bold bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">Trending</span>
+                                    <span className="font-semibold text-green-600">Trending</span>
                                 </div>
                             </div>
                         </div>
                     </a>
                 </Card>
 
-                {/* Secondary Stories with 3D Effects */}
+                {/* Secondary Stories with AI Effects */}
                 <div className='col-span-1 space-y-6'>
                     {secondaryStories.slice(0, 2).map((news, index) => (
                         <Card
@@ -210,8 +273,15 @@ export default function FeaturedNews() {
                                 animationDelay: `${index * 0.2}s`
                             }}
                         >
-                            {/* Floating Animation */}
+                            {/* AI Data Flow Effect */}
                             <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            
+                            {/* Processing Dots */}
+                            <div className="absolute top-2 right-2 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0s'}} />
+                                <div className="w-1 h-1 bg-yellow-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}} />
+                                <div className="w-1 h-1 bg-red-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}} />
+                            </div>
                             
                             <div className='p-4 space-y-3 relative z-10'>
                                 <div className='flex items-center justify-between'>
@@ -260,8 +330,8 @@ export default function FeaturedNews() {
                                         <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent transform -skew-x-12 -translate-x-full group-hover/link:translate-x-full transition-transform duration-500" />
                                     </Link>
                                     <div className='flex items-center gap-1 text-xs text-muted-foreground'>
-                                        <TrendingUp className='h-3 w-3 text-green-500 animate-pulse' />
-                                        <span className="font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">Hot</span>
+                                        <TrendingUp className='h-3 w-3 text-orange-500 animate-pulse' />
+                                        <span className="font-semibold text-orange-600">Hot</span>
                                     </div>
                                 </div>
                             </div>
@@ -270,12 +340,14 @@ export default function FeaturedNews() {
                 </div>
             </div>
 
-            {/* Floating Action Button */}
+            {/* AI Floating Action Button */}
             <div className="fixed bottom-6 right-6 z-50">
                 <div className="relative group">
                     <div className="absolute inset-0 bg-gradient-to-r from-primary to-purple-600 rounded-full blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300 animate-pulse" />
                     <button className="relative bg-gradient-to-r from-primary to-purple-600 text-white p-4 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-110 group-hover:rotate-12">
-                        <Sparkles className="h-6 w-6" />
+                        <Brain className="h-6 w-6" />
+                        {/* AI Processing Ring */}
+                        <div className="absolute inset-0 border-2 border-white/30 rounded-full animate-spin" style={{animationDuration: '2s'}} />
                     </button>
                 </div>
             </div>
