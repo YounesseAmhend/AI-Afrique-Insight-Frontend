@@ -75,11 +75,11 @@ export default function NewsGrid({
           <Newspaper className='h-5 w-5 text-primary' />
           Loading AI News...
         </h2>
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8'>
           {[...Array(6)].map((_, index) => (
-            <div key={index} className='animate-pulse'>
-              <div className='bg-gray-200 dark:bg-gray-800 h-[180px] rounded-t-md' />
-              <div className='p-4 border border-gray-200 dark:border-gray-800 rounded-b-md'>
+            <div key={index} className='animate-pulse rounded-2xl shadow-sm bg-white dark:bg-gray-900'>
+              <div className='bg-gray-200 dark:bg-gray-800 h-40 rounded-t-2xl' />
+              <div className='p-5'>
                 <div className='flex justify-between mb-2'>
                   <div className='h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/4' />
                   <div className='h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/4' />
@@ -115,10 +115,10 @@ export default function NewsGrid({
   }
 
   return (
-    <section className='space-y-6'>
+    <section className='space-y-8'>
       <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
-        <h2 className='text-2xl font-bold flex items-center gap-2'>
-          <Newspaper className='h-5 w-5 text-primary' />
+        <h2 className='text-3xl font-extrabold flex items-center gap-2 tracking-tight'>
+          <Newspaper className='h-6 w-6 text-primary' />
           {gridTitle}
         </h2>
         {(showCategoryFilter !== false) && (
@@ -126,9 +126,9 @@ export default function NewsGrid({
             <select
               value={activeCategory}
               onChange={handleCategoryChange}
-              className='flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors appearance-none bg-gray-50 dark:bg-gray-900 text-sm font-medium cursor-pointer focus:ring-2 focus:ring-primary focus:outline-none w-48'
+              className='flex items-center gap-2 px-4 py-2 border-none rounded-full shadow-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors appearance-none bg-gray-100 dark:bg-gray-900 text-sm font-semibold cursor-pointer focus:ring-2 focus:ring-primary focus:outline-none w-52'
             >
-                             {categories.map((category) => (
+              {categories.map((category) => (
                 <option key={category} value={category}>
                   {category}
                 </option>
@@ -141,7 +141,7 @@ export default function NewsGrid({
         )}
       </div>
 
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8'>
         {items.map((item) => {
           const tempDiv = document.createElement("div");
           tempDiv.innerHTML = item.body;

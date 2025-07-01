@@ -5,7 +5,7 @@ import NewsGrid from "./NewsGrid";
 import { Page, NewsResponseDto } from "@/types/newsType";
 
 export function HomeNewsGrid() {
-    const { data, isLoading, error } = useGetPaginatedNews(0, 9, undefined);  // undefined means "All" categories
+    const { data, isLoading, error } = useGetPaginatedNews(0, 8, undefined);  // undefined means "All" categories
     
     // Type the data properly
     const pageData = data as Page<NewsResponseDto> | undefined;
