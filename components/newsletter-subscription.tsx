@@ -6,100 +6,72 @@ import type React from "react"
 
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Mail, Check, AlertCircle } from "lucide-react"
+import { Check, AlertCircle, Download } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { newsApi } from "@/apis/newsApi"
 
-export default function NewsletterSubscription() {
-  const [email, setEmail] = useState("")
+export default function DatasetDownloadCard() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
   const [errorMessage, setErrorMessage] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    // Basic email validation
-    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-      setStatus("error")
-      setErrorMessage("Please enter a valid email address")
-      return
-    }
-
+  const handleDownload = async () => {
     setStatus("loading")
-
-    // Simulate API call
-    setTimeout(() => {
-      // Success simulation (in a real app, this would be an API call)
-      if (Math.random() > 0.2) {
-        setStatus("success")
-      } else {
-        setStatus("error")
-        setErrorMessage("There was an error subscribing. Please try again.")
-      }
-    }, 1000)
+    try {
+      await newsApi.downloadNewsAsCsv()
+      setStatus("success")
+      setTimeout(() => setStatus("idle"), 2000)
+    } catch (error: unknown) {
+      setStatus("error")
+      setErrorMessage(error instanceof Error ? error.message : "Could not download the file. Please try again.")
+    }
   }
 
   return (
     <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Mail className="h-5 w-5 text-primary" />
-          Stay Updated on AI Advancements
+          <Download className="h-5 w-5 text-primary" />
+          Download AI News Dataset
         </CardTitle>
         <CardDescription>
-          Get the latest AI news, research papers, and industry updates delivered to your inbox.
+          Access the latest AI news dataset in CSV format, curated from top sources across Africa. Perfect for research, analytics, and more.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {status === "success" ? (
-          <Alert className="bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900">
+        <Button
+          onClick={handleDownload}
+          disabled={status === "loading"}
+          className="w-full flex items-center gap-2"
+        >
+          <Download className="h-4 w-4" />
+          {status === "loading" ? "Preparing Download..." : "Download CSV"}
+        </Button>
+        {status === "success" && (
+          <Alert className="mt-4 bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900">
             <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
             <AlertDescription>
-              Thanks for subscribing! Please check your email to confirm your subscription.
+              Download started! Check your downloads folder.
             </AlertDescription>
           </Alert>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1">
-                <Input
-                  type="email"
-                  placeholder="your.email@example.com"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value)
-                    if (status === "error") setStatus("idle")
-                  }}
-                  className="w-full"
-                  disabled={status === "loading"}
-                />
-              </div>
-              <Button type="submit" disabled={status === "loading"} className="min-w-[120px]">
-                {status === "loading" ? "Subscribing..." : "Subscribe"}
-              </Button>
-            </div>
-
-            {status === "error" && (
-              <Alert variant="destructive" className="py-2">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{errorMessage}</AlertDescription>
-              </Alert>
-            )}
-
-            <p className="text-xs text-muted-foreground">
-              By subscribing, you agree to our{" "}
-              <Link href="/privacy-policy" className="underline hover:text-primary">
-                Privacy Policy
-              </Link>{" "}
-              and{" "}
-              <Link href="/terms" className="underline hover:text-primary">
-                Terms of Service
-              </Link>
-              . You can unsubscribe at any time.
-            </p>
-          </form>
         )}
+        {status === "error" && (
+          <Alert variant="destructive" className="mt-4 py-2">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        )}
+        <p className="text-xs text-muted-foreground mt-4">
+          By downloading, you agree to our {" "}
+          <Link href="/privacy-policy" className="underline hover:text-primary">
+            Privacy Policy
+          </Link>{" "}
+          and {" "}
+          <Link href="/terms" className="underline hover:text-primary">
+            Terms of Service
+          </Link>
+          .
+        </p>
       </CardContent>
     </Card>
   )
