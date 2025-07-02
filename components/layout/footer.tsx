@@ -43,7 +43,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <div>
             <Link href="/" className="inline-block mb-4">
-              <span className="text-2xl font-bold tracking-tighter text-white">AI NEWS</span>
+              <span className="text-2xl font-bold tracking-tighter text-white">AI AFRICA NEWS</span>
             </Link>
             <p className="text-sm text-gray-400 mb-4">
               Your trusted source for the latest artificial intelligence news, research, and industry developments.

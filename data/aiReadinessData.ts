@@ -155,7 +155,7 @@ export const aiReadinessDataArray: AIReadinessCountryData[] = [
   { id: "TG", name: "Togo", value: 0.3156863898 },
   { id: "TT", name: "Trinidad and Tobago", value: 0.4356224835 },
   { id: "TN", name: "Tunisia", value: 0.4654096887 },
-  { id: "TR", name: "Türkiye, Republic of", value: 0.5401873589 },
+  { id: "TR", name: "Turkey", value: 0.5401873589 },
   { id: "UG", name: "Uganda", value: 0.3539346606 },
   { id: "UA", name: "Ukraine", value: 0.5124830604 },
   { id: "AE", name: "United Arab Emirates", value: 0.6281846315 },
@@ -163,7 +163,12 @@ export const aiReadinessDataArray: AIReadinessCountryData[] = [
   { id: "US", name: "United States", value: 0.771269083 },
   { id: "YE", name: "Yemen", value: 0.2533275578 },
   { id: "ZM", name: "Zambia", value: 0.3707199767 },
-  { id: "ZW", name: "Zimbabwe", value: 0.3047910891 }
+  { id: "ZW", name: "Zimbabwe", value: 0.3047910891 },
+  { id: "IC", name: "Ivory Coast", value: 0.1047910891 },
+  { id: "UY", name: "Uruguay", value: 0.1047910891 },
+  { id: "VE", name: "Venezuela", value: 0.0047910891 },
+  { id: "VN", name: "Vietnam", value: 0.1047910891 },
+  { id: "SS", name: "South Sudan", value: 0.1047910891 },
 ];
 
 // Sort data by value for the rankings (descending)

@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 import { Globe, Menu, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { newsApi } from "@/apis/newsApi";
 
 export default function Header() {
     const isMobile = useMobile();
@@ -24,20 +23,6 @@ export default function Header() {
         { name: "Map", href: "/map" },
         // { name: "About", href: "/about" },
     ];
-
-    const handleDownload = async () => {
-        console.log("Download button clicked. Calling API...");
-        try {
-            await newsApi.downloadNewsAsCsv();
-            console.log("Download initiated successfully.");
-        } catch (error) {
-            if (error instanceof Error) {
-                alert(error.message);
-            } else {
-                alert("An unknown error occurred during download.");
-            }
-        }
-    };
 
     useEffect(() => {
         const handleScroll = () => {
@@ -63,7 +48,7 @@ export default function Header() {
                             <Globe className='absolute inset-0 m-auto text-white h-5 w-5' />
                         </div>
                         <span className='text-xl font-light tracking-wide'>
-                            <span className='font-bold'>AI</span>News
+                            <span className='font-bold'>AI</span>AfricaNews
                         </span>
                     </Link>
 
@@ -113,15 +98,6 @@ export default function Header() {
                         )}
 
                         <ThemeSwitch />
-
-                        <Button
-                            onClick={handleDownload}
-                            variant='ghost'
-                            className='h-9 bg-cyan-500/50 hover:bg-cyan-500 text-white transition-colors duration-200 px-4'
-                            aria-label='Download DataSet'
-                        >
-                            Data-Set
-                        </Button>
 
                         {isMobile && (
                             <Button
