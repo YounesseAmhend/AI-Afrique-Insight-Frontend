@@ -10,6 +10,7 @@ export const categoryColors: { [key: string]: string } = {
   "NLP": "#8B5CF6",
   "Computer Vision": "#F472B6",
   "AI Art": "#FACC15",
+  "Events": "#EC4899",
   "Opinion": "#64748B"
 };
 
