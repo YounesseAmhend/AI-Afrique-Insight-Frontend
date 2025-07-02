@@ -5,6 +5,7 @@ import Pagination from "@/components/Pagination";
 
 import { NewsResponseDto } from "@/types/newsType";
 import { ChevronDown, Newspaper } from "lucide-react";
+import { ReactNode } from "react";
 
 
 
@@ -39,8 +40,9 @@ interface Props {
   onCategoryChange: (category: string) => void;
   showCategoryFilter?: boolean;
   showPagination?: boolean;
-  title?: string;
+  title?: ReactNode;
   categoryOptions?: string[];
+  action?: ReactNode;
 }
 
 export default function NewsGrid({ 
@@ -55,9 +57,10 @@ export default function NewsGrid({
   title, 
   showCategoryFilter,
   showPagination,
-  categoryOptions
+  categoryOptions,
+  action
 }: Props) {
-  const gridTitle = title || "Latest AI News";
+  const gridTitle = title ?? "Latest AI News";
   
   // Use provided category options or fallback to default
   const defaultCategories: string[] = ['All', "Research", "AI Tools", "Industry", "Startups", "Regulation", "Ethics", "Health", "Robotics", "NLP", "Computer Vision", "AI Art", "Opinion", "Uncategorized"];
@@ -121,7 +124,9 @@ export default function NewsGrid({
           <Newspaper className='h-6 w-6 text-primary' />
           {gridTitle}
         </h2>
-        {(showCategoryFilter !== false) && (
+        {action ? (
+          <div>{action}</div>
+        ) : (showCategoryFilter !== false) && (
           <div className='relative'>
             <select
               value={activeCategory}
