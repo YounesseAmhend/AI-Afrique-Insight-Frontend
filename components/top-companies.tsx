@@ -17,6 +17,7 @@ type Company = {
   category: string
   growth: string
   url: string
+  image: string
 }
 
 export default function TopCompanies() {
@@ -133,7 +134,7 @@ export default function TopCompanies() {
                         <div className="relative">
                           <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center overflow-hidden border-2 border-white/50 dark:border-gray-600/50 shadow-lg">
                             <img
-                              src={company.logo || "/placeholder.svg"}
+                              src={company.image || "/placeholder.svg"}
                               alt={`${company.name} logo`}
                               className="w-full h-full object-cover"
                             />
